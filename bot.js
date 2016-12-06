@@ -1,0 +1,53 @@
+'use strict';
+
+const SensorApi = require('./sensorApi');
+
+const API_USERNAME = process.env.API_USERNAME || require('./keys').apiUserName;
+const API_PASSWORD = process.env.API_PASSWORD || require('./keys').apiPassword;
+const API_URL = process.env.API_URL || require('./keys').apiUrl;
+
+const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL);
+
+const bot = () => {
+    const anyone = ['Anyone', 'anyone'];
+
+    const hasPeople = () => {
+        return api.hasPeople().then(resonse => {
+            return resonse ? 'Office has people' : 'Office is empty';
+        }).catch(error => {
+            return 'Service is offline';
+        });
+    };
+
+    const temperature = () => {
+        return api.temperature().then(response => {
+            const retVal = {
+                temperature: response.Temperature / 100,
+                humidity: response.Humidity,
+                noise: response.Noise,
+                light: response.Light
+            };
+            return JSON.stringify(retVal);
+        }).catch(error => {
+            return 'Service is offline';
+        });
+    };
+
+    return {
+        handle(msg) {
+            if (anyone.some(e => e === msg)) {
+                return hasPeople();
+            }
+            else if (msg === 'temp') {
+                return temperature();
+            }
+            else if (msg === 'cmd') {
+                return Promise.resolve(`*anyone*: Is there anyone at the office\n\r*temp*: Office temperature`);
+            }
+
+            return Promise.resolve("Hello! Write _cmd_ to get commands I know.");
+        }
+    }
+}
+
+module.exports = bot();

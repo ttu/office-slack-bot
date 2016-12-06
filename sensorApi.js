@@ -27,6 +27,17 @@ class SensorApi {
             return values.some(e => e === true);
         });
     }
+
+    temperature() {
+        return new Promise((resolve, reject) => {
+            request
+                .get(`${this.url}/api/data/000D6F0004476483`)
+                .auth(this.username, this.password)
+                .end((err, res) => {
+                    err || !res.ok ? reject(err) : resolve(res.body[0]);
+                });
+        });
+    }
 }
 
 module.exports = SensorApi;

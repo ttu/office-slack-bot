@@ -1,0 +1,19 @@
+{
+  "name": "sensorapi-slack-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "mocha sensorApi.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "botkit": "^0.4.2",
+    "superagent": "^3.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  }
+}

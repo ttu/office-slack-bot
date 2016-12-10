@@ -9,7 +9,8 @@ const API_URL = process.env.API_URL || require('./keys').apiUrl;
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL);
 
 const bot = () => {
-    const anyone = ['Anyone', 'anyone'];
+    const anyone = ['people', 'anyone', 'any'];
+    const temp = ['temp', 'temperature'];
 
     const hasPeople = () => {
         return api.hasPeople().then(resonse => {
@@ -34,11 +35,13 @@ const bot = () => {
     };
 
     return {
-        handle(msg) {
+        handle(message) {
+            const msg = message.toLowerCase();
+
             if (anyone.some(e => e === msg)) {
                 return hasPeople();
             }
-            else if (msg === 'temp') {
+            else if (temp.some(e => e === msg)) {
                 return temperature();
             }
             else if (msg === 'cmd') {

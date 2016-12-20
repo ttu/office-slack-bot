@@ -28,7 +28,8 @@ const bot = () => {
                 noise: response.Noise,
                 light: response.Light
             };
-            return JSON.stringify(retVal);
+            // Slack format for code block ```triple backticks```
+            return `\`\`\`${JSON.stringify(retVal)}\`\`\``;
         }).catch(error => {
             return 'Service is offline';
         });

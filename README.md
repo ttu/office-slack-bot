@@ -1,7 +1,8 @@
-SensorData Slack Bot
+Slack Bot
 ------------------------------
 
-Slack Bot which gets data from [Sensordata api](https://github.com/ttu/sensordata-node-restapi).
+* Get sensordata from [Sensordata API](https://github.com/ttu/sensordata-node-restapi)
+* Get restaurant list from [Google Places API](https://developers.google.com/places/web-service/search)
 
 ### Tokens, passwords etc.
 
@@ -16,6 +17,7 @@ module.exports = {
     homeChannelId: 'xxxx',
     apiUserName: 'xxxx',
     apiPassword: 'xxxx',
-    apiUrl: 'xxxx'
+    apiUrl: 'xxxx',
+    locationApiKey: 'xxxx' 
 };
 ```

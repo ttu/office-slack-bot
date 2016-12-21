@@ -71,7 +71,7 @@ class RestaurantService {
         if (isOld || this.updatePromise === null)
             this.refreshData();
         
-        return this.updatePromise.then(_ => this.getFromList()).catch(errMessage => errMessage);
+        return this.updatePromise.then(_ => this.getFromList());
     }
 }
 

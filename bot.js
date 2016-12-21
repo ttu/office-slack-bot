@@ -41,8 +41,8 @@ const bot = () => {
 
     const getLunchPlace = () => {
         return restaurants.getRestaurant().then(response => { 
-            return response; 
-        });
+            return `How about ${response}?`; 
+        }).catch(errorMessage => errorMessage);
     };
 
     return {
@@ -59,7 +59,7 @@ const bot = () => {
                 return getLunchPlace();
             }
             else if (msg === 'cmd') {
-                return Promise.resolve(`*anyone*: Is there anyone at the office\n\r*temp*: Office temperature\n\r*lunch*: Suggest a lunch place`);
+                return Promise.resolve(`\`\`\`anyone: Is there anyone at the office\ntemp: Office temperature\nlunch: Suggest a lunch place\`\`\``);
             }
 
             return Promise.resolve("Hello! Write _cmd_ to get commands I know.");

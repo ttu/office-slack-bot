@@ -32,7 +32,7 @@ class RestaurantService {
                         return;
                     }
 
-                    const newDatas = datas.concat(res.body.results.map(r => r.name));
+                    const newDatas = datas.concat(res.body.results.map(r => `${r.name} (${r.vicinity})`));
                     if (res.body.next_page_token) {
                         const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${res.body.next_page_token}&key=${this.key}`;
                         getData(newDatas, nextPageUrl, cb);
@@ -61,17 +61,13 @@ class RestaurantService {
         return this.updatePromise;
     }
 
-    getFromList() {
-        return this.data[Math.floor(Math.random() * this.data.length)];
-    }
-
     getRestaurant() {
         const isOld = Date.now() - this.lastUpdateTimeInMs > this.refreshTimeMs;
 
         if (isOld || this.updatePromise === null)
             this.refreshData();
         
-        return this.updatePromise.then(_ => this.getFromList());
+        return this.updatePromise.then(_ => this.data[Math.floor(Math.random() * this.data.length)]);
     }
 }
 

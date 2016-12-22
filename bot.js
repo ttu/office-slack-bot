@@ -41,7 +41,7 @@ const bot = () => {
 
     const getLunchPlace = () => {
         return restaurants.getRestaurant().then(response => { 
-            return `How about ${response}?`; 
+            return `How about ${response}`; 
         }).catch(errorMessage => errorMessage);
     };
 

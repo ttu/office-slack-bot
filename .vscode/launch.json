@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceRoot}\\testConsole.js",
+            "program": "${workspaceRoot}\\consoleApp.js",
             "cwd": "${workspaceRoot}"
         },
         {

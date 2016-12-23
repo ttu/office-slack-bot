@@ -9,7 +9,7 @@ const API_PASSWORD = process.env.API_PASSWORD || require('./keys').apiPassword;
 const API_URL = process.env.API_URL || require('./keys').apiUrl;
 const LOCATION_API_KEY = process.env.LOCATION_API_KEY || require('./keys').locationApiKey;
 
-const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL);
+const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
 
 const bot = () => {
@@ -26,8 +26,9 @@ const bot = () => {
     };
 
     const temperature = () => {
-        return api.temperature().then(response => {
+        return api.temperature(Config.sensors[0]).then(([sensor, response]) => {
             const retVal = {
+                name: sensor.name,
                 temperature: response.Temperature / 100,
                 humidity: response.Humidity,
                 noise: response.Noise,
@@ -41,8 +42,8 @@ const bot = () => {
     };
 
     const getLunchPlace = () => {
-        return restaurants.getRestaurant().then(response => { 
-            return `How about ${response}`; 
+        return restaurants.getRestaurant().then(response => {
+            return `How about ${response}`;
         }).catch(errorMessage => errorMessage);
     };
 

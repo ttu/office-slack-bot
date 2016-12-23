@@ -3,19 +3,18 @@
 const request = require('superagent');
 
 class SensorApi {
-    constructor(username, password, url) {
+    constructor(username, password, url, sensors) {
         this.username = username;
         this.password = password;
         this.url = url;
+        this.sensors = sensors;
     }
 
     hasPeople() {
-        const sensors = ['000D6F0004476483', '000D6F0003141E14'];
-
-        const promises = sensors.map(sensorId => {
+        const promises = this.sensors.map(sensor => {
             return new Promise((resolve, reject) => {
                 request
-                    .get(`${this.url}/api/haspeople/${sensorId}`)
+                    .get(`${this.url}/api/haspeople/${sensor.id}`)
                     .auth(this.username, this.password)
                     .end((err, res) => {
                         err || !res.ok ? reject(err) : resolve(res.body > 0);
@@ -28,13 +27,13 @@ class SensorApi {
         });
     }
 
-    temperature() {
+    temperature(sensor) {
         return new Promise((resolve, reject) => {
             request
-                .get(`${this.url}/api/data/000D6F0004476483`)
+                .get(`${this.url}/api/data/${sensor.id}`)
                 .auth(this.username, this.password)
                 .end((err, res) => {
-                    err || !res.ok ? reject(err) : resolve(res.body[0]);
+                    err || !res.ok ? reject(err) : resolve([sensor, res.body[0]]);
                 });
         });
     }

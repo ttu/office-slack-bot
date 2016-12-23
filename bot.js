@@ -2,6 +2,7 @@
 
 const SensorApi = require('./sensorApi');
 const RestaurantService = require('./restaurantService');
+const Config = require('./config.js');
 
 const API_USERNAME = process.env.API_USERNAME || require('./keys').apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || require('./keys').apiPassword;
@@ -9,7 +10,7 @@ const API_URL = process.env.API_URL || require('./keys').apiUrl;
 const LOCATION_API_KEY = process.env.LOCATION_API_KEY || require('./keys').locationApiKey;
 
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL);
-const restaurants = new RestaurantService(LOCATION_API_KEY);
+const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
 
 const bot = () => {
     const anyone = ['people', 'anyone', 'any'];

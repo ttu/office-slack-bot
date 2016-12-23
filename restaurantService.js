@@ -3,9 +3,8 @@
 const request = require('superagent');
 
 class RestaurantService {
-    constructor(apiKey) {
+    constructor(apiKey, office) {
         this.key = apiKey;
-        const office = { lat: 60.171005, lon: 24.945224 };
         this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=500&type=restaurant&opennow=true&key=${this.key}`;
         this.lastUpdateTimeInMs = 0;
         this.refreshTimeMs = 5 * 60 * 10000;
@@ -38,6 +37,7 @@ class RestaurantService {
                         getData(newDatas, nextPageUrl, cb);
                     }
                     else {
+                        console.log(`Found ${newDatas.length} items`);
                         cb([true, newDatas]);
                     }
                 });

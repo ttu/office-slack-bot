@@ -26,18 +26,34 @@ const bot = () => {
     };
 
     const temperature = () => {
-        return api.temperature(Config.sensors[0]).then(([sensor, response]) => {
-            const retVal = {
-                name: sensor.name,
-                temperature: response.Temperature / 100,
-                humidity: response.Humidity,
-                noise: response.Noise,
-                light: response.Light
-            };
+        const promises = Config.sensors.map(s => {
+            return new Promise((resolve, reject) => {
+                api.temperature(s).then(([sensor, response]) => {
+                    const sensorData = {
+                        name: sensor.name,
+                        temperature: response.Temperature / 100,
+                        humidity: response.Humidity,
+                        noise: response.Noise,
+                        light: response.Light
+                    };
+                    resolve(sensorData);
+                }).catch(e => {
+                    Console.log(e);
+                    // Because Promise.all will fail fast, on error return null
+                    resolve(null);
+                });
+            });
+        });
+
+        return Promise.all(promises).then(values => {
+            const lines = values
+                .filter(e => e !== null)
+                .reduce((prev, curr) => {
+                    return `${prev}${prev !== '' ? '\n\r' : ''}${JSON.stringify(curr)}`
+                }, '');
+
             // Slack format for code block ```triple backticks```
-            return `\`\`\`${JSON.stringify(retVal)}\`\`\``;
-        }).catch(error => {
-            return 'Service is offline';
+            return `\`\`\`${lines}\`\`\``;
         });
     };
 

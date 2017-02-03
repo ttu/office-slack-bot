@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "mocha sensorApi.test.js"
+    "test": "mocha sensorApi.test.js",
+    "console": "node consoleApp.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,21 +1,29 @@
 'use strict';
 
+const moment = require('moment');
+moment.locale('fi');
+
 const SensorApi = require('./sensorApi');
 const RestaurantService = require('./restaurantService');
+const CalendarService = require('./calendarService');
 const Config = require('./config.js');
+const Keys = require('./keys');
 
-const API_USERNAME = process.env.API_USERNAME || require('./keys').apiUserName;
-const API_PASSWORD = process.env.API_PASSWORD || require('./keys').apiPassword;
-const API_URL = process.env.API_URL || require('./keys').apiUrl;
-const LOCATION_API_KEY = process.env.LOCATION_API_KEY || require('./keys').locationApiKey;
+const API_USERNAME = process.env.API_USERNAME || Keys.apiUserName;
+const API_PASSWORD = process.env.API_PASSWORD || Keys.apiPassword;
+const API_URL = process.env.API_URL || Keys.apiUrl;
+const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Keys.locationApiKey;
 
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
+const calendar = new CalendarService(Keys.meetingRooms);
 
 const bot = () => {
     const anyone = ['people', 'anyone', 'any'];
     const temp = ['temp', 'temperature'];
     const lunch = ['lunch', 'lounas'];
+    const free = ['free', 'vapaa'];
+    const reservations = ['reservations', 'current', 'neukkarit'];
 
     const hasPeople = () => {
         return api.hasPeople().then(resonse => {
@@ -63,6 +71,34 @@ const bot = () => {
         }).catch(errorMessage => errorMessage);
     };
 
+    const getCurrentEvents = () => {
+        return calendar.process(2).then(events => {
+            return events.reduce((prev, e) => {
+                const start = moment(e.start).format('L LT');
+                const end = moment(e.end).format('LT');
+                return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
+            }, 'Current reservations:');
+        }).catch(errorMessage => errorMessage);
+    };
+
+    const getFreeSlotDuration = () => {
+        return calendar.process().then(events => {
+            return events.reduce((prev, e) => {
+                const diff = moment.duration(moment(e.start).diff(moment()));
+                const diffAsHours = diff.asHours();
+                if (diffAsHours > 0 && diffAsHours < 1) {
+                    return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
+                }
+                else if (diffAsHours > 0) {
+                    return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
+                }
+                else {
+                    return prev;
+                }
+            }, 'Free for the next:');
+        }).catch(errorMessage => errorMessage);
+    };
+
     return {
         handle(message) {
             const msg = message.toLowerCase();
@@ -76,8 +112,14 @@ const bot = () => {
             else if (lunch.some(e => e === msg)) {
                 return getLunchPlace();
             }
+            else if (free.some(e => e === msg)) {
+                return getFreeSlotDuration();
+            }
+            else if (reservations.some(e => e === msg)) {
+                return getCurrentEvents();
+            }
             else if (msg === 'cmd') {
-                return Promise.resolve(`\`\`\`anyone: Is there anyone at the office\ntemp: Office temperature\nlunch: Suggest a lunch place\`\`\``);
+                return Promise.resolve(`\`\`\`anyone: Is there anyone at the office\ntemp: Office temperature\nfree: List free meeting rooms\nreservations: List next meeting room reservations\nlunch: Suggest a lunch place\`\`\``);
             }
 
             return Promise.resolve("Hello! Write _cmd_ to get commands I know.");

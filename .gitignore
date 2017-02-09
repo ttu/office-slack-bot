@@ -1,4 +1,6 @@
 keys.js
+client_secret.json
+calendar-authToken.json
 
 # Logs
 logs

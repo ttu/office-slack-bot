@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "mocha sensorApi.test.js",
-    "console": "node consoleApp.js"
+    "start": "node src/app.js",
+    "test": "mocha test/sensorApi.test.js",
+    "console": "node src/consoleApp.js"
   },
   "author": "",
   "license": "ISC",

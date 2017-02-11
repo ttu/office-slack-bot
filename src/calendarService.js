@@ -31,7 +31,6 @@ class CalendarService {
                 return;
             }
 
-            // Check if we have previously stored a token.
             fs.readFile('calendar-authToken.json', (err, token) => {
                 if (err) {
                     cb('Create new auth token - ' + err);

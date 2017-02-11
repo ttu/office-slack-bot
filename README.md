@@ -20,19 +20,15 @@ Get `/api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordat
 
 #### Suggest a lunch place 
 
-Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list.
-
-Office location is defined in the config.js. 
+Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list. Office location is defined in the configuration.js. 
 
 #### Free meeting rooms & Current events
 
-Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/quickstart/nodejs) to get events.
+Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/quickstart/nodejs) to get events. Meeting room calendars are defined in configuration.js.
 
-Meeting room calendars are defined in configuration.js.
+Execute `npm run create_token` to store authentication token to json-file. This file is not in version control.
 
-Execute `node googleTokenCreator.js` to create authToken.json. This file is not in version control.
-
-Current events lists next 2 events for each calendar defined in the configuration.js.
+Free meeting rooms list rooms that are free and duration how long they are avaialble. Current events lists next 2 events for each calendar defined in the configuration.js.
 
 ### ConsoleApp for testing
 

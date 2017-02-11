@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "test": "mocha test/sensorApi.test.js",
-    "console": "node src/consoleApp.js"
+    "console": "node src/consoleApp.js",
+    "create_token": "node src/googleTokenCreator.js"
   },
   "author": "",
   "license": "ISC",

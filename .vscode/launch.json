@@ -7,8 +7,15 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceRoot}\\consoleApp.js",
+            "name": "Launch Console",
+            "program": "${workspaceRoot}\\src\\consoleApp.js",
+            "cwd": "${workspaceRoot}"
+        },
+         {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch BotKit",
+            "program": "${workspaceRoot}\\src\\app.js",
             "cwd": "${workspaceRoot}"
         },
         {

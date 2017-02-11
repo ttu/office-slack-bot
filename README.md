@@ -28,11 +28,11 @@ Office location is defined in the config.js.
 
 Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/quickstart/nodejs) to get events.
 
-Meeting room calendars are defined in keys.js.
+Meeting room calendars are defined in configuration.js.
 
 Execute `node googleTokenCreator.js` to create authToken.json. This file is not in version control.
 
-Current events lists next 2 events for each calendar defined in the keys.js.
+Current events lists next 2 events for each calendar defined in the configuration.js.
 
 ### ConsoleApp for testing
 
@@ -42,11 +42,11 @@ Console app wraps same functionality as BotKit, so it works with same commands a
 $ npm run console
 ```
 
-### Tokens, passwords etc.
+### Configuration
 
-Give these as environment variables or add keys.js file
+configuration.js containts tokens, passwords, locations, sensors etc. Some of these can be given also as environment variables
 
-keys.js:
+configuration.js:
 ```js
 'use strict';
 
@@ -57,6 +57,11 @@ module.exports = {
     apiPassword: 'xxxx',
     apiUrl: 'xxxx',
     locationApiKey: 'xxxx',
+    office: { lat: 60.17, lon: 24.94 },
+    sensors: [ 
+        { id: 'xxx', name: 'xx'},
+        { id: 'xxx', name: 'xx'}        
+    ],
     meetingRooms: [
         { name: 'xxxx', id: 'xxxx'},
 };

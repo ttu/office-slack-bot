@@ -6,17 +6,16 @@ moment.locale('fi');
 const SensorApi = require('./sensorApi');
 const RestaurantService = require('./restaurantService');
 const CalendarService = require('./calendarService');
-const Config = require('./config.js');
-const Keys = require('./keys');
+const Config = require('./configuration');
 
-const API_USERNAME = process.env.API_USERNAME || Keys.apiUserName;
-const API_PASSWORD = process.env.API_PASSWORD || Keys.apiPassword;
-const API_URL = process.env.API_URL || Keys.apiUrl;
-const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Keys.locationApiKey;
+const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
+const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
+const API_URL = process.env.API_URL || Config.apiUrl;
+const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Config.locationApiKey;
 
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
-const calendar = new CalendarService(Keys.meetingRooms);
+const calendar = new CalendarService(Config.meetingRooms);
 
 const bot = () => {
     const anyone = ['people', 'anyone', 'any'];

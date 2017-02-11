@@ -17,6 +17,7 @@ const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
 const calendar = new CalendarService(Config.meetingRooms);
 
+// Bot return object literal instead of class, so we can have private functions
 const bot = () => {
     const anyone = ['people', 'anyone', 'any'];
     const temp = ['temp', 'temperature'];
@@ -28,6 +29,7 @@ const bot = () => {
         return api.hasPeople().then(resonse => {
             return resonse ? 'Office has people' : 'Office is empty';
         }).catch(error => {
+            notifyFunc('hasPeople failed: ' + error);
             return 'Service is offline';
         });
     };
@@ -44,8 +46,8 @@ const bot = () => {
                         light: response.Light
                     };
                     resolve(sensorData);
-                }).catch(e => {
-                    Console.log(e);
+                }).catch(errorMessag => {
+                    notifyFunc('temperature failed: ' + errorMessag)
                     // Because Promise.all will fail fast, on error return null
                     resolve(null);
                 });
@@ -67,7 +69,7 @@ const bot = () => {
     const getLunchPlace = () => {
         return restaurants.getRestaurant().then(response => {
             return `How about ${response}`;
-        }).catch(errorMessage => errorMessage);
+        }).catch(errorMessage => notifyFunc(errorMessage));
     };
 
     const getCurrentEvents = () => {
@@ -77,7 +79,7 @@ const bot = () => {
                 const end = moment(e.end).format('LT');
                 return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
             }, 'Current reservations:');
-        }).catch(errorMessage => errorMessage);
+        }).catch(errorMessage => notifyFunc(errorMessage));
     };
 
     const getFreeSlotDuration = () => {
@@ -95,10 +97,16 @@ const bot = () => {
                     return prev;
                 }
             }, 'Free for the next:');
-        }).catch(errorMessage => errorMessage);
+        }).catch(errorMessage => notifyFunc(errorMessage));
     };
 
+    // default empty notify function
+    let notifyFunc = (output) => {};
+    
     return {
+        setNotifyFunc(func) {
+            notifyFunc = func;
+        },
         handle(message) {
             const msg = message.toLowerCase();
 

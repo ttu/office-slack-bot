@@ -62,3 +62,11 @@ module.exports = {
         { name: 'xxxx', id: 'xxxx'},
 };
 ```
+
+### Tests
+
+Test folder contains integration tests.
+
+```sh
+$ npm test
+```

@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "mocha test/sensorApi.test.js",
+    "test": "mocha -t 100000 test/*.test.js",
     "console": "node src/consoleApp.js",
     "create_token": "node src/googleTokenCreator.js"
   },

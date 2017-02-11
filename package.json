@@ -15,7 +15,7 @@
     "botkit": "^0.4.2",
     "google-auth-library": "^0.10.0",
     "googleapis": "^16.1.0",
-    "momentjs": "^2.0.0",
+    "moment": "^2.0.0",
     "superagent": "^3.1.0"
   },
   "devDependencies": {

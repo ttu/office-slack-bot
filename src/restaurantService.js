@@ -5,7 +5,8 @@ const request = require('superagent');
 class RestaurantService {
     constructor(apiKey, office) {
         this.key = apiKey;
-        this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=500&type=restaurant&opennow=true&key=${this.key}`;
+        this.onlyOpen = false;
+        this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=500&type=restaurant${this.onlyOpen ? '&opennow=true' : ''}&key=${this.key}`;
         this.lastUpdateTimeInMs = 0;
         this.refreshTimeMs = 5 * 60 * 10000;
         this.updatePromise = null;

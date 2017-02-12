@@ -25,9 +25,13 @@ const bot = () => {
     const free = ['free', 'vapaa'];
     const reservations = ['reservations', 'current', 'neukkarit'];
 
+    // Slack format for code block ```triple backticks```
+    const outputFormat = (text) => `\`\`\`${text}\`\`\``;
+
     const hasPeople = () => {
         return api.hasPeople().then(resonse => {
-            return resonse ? 'Office has people' : 'Office is empty';
+            const text = resonse ? 'Office has people' : 'Office is empty';
+            return outputFormat(text);
         }).catch(error => {
             notifyFunc('hasPeople failed: ' + error);
             return 'Service is offline';
@@ -58,11 +62,9 @@ const bot = () => {
             const lines = values
                 .filter(e => e !== null)
                 .reduce((prev, curr) => {
-                    return `${prev}${prev !== '' ? '\n\r' : ''}${JSON.stringify(curr)}`
+                    return `${prev}${prev !== '' ? '\n' : ''}${JSON.stringify(curr)}`
                 }, '');
-
-            // Slack format for code block ```triple backticks```
-            return `\`\`\`${lines}\`\`\``;
+            return outputFormat(lines);
         });
     };
 
@@ -74,35 +76,37 @@ const bot = () => {
 
     const getCurrentEvents = () => {
         return calendar.process(2).then(events => {
-            return events.reduce((prev, e) => {
+            const eventsText = events.reduce((prev, e) => {
                 const start = moment(e.start).format('L LT');
                 const end = moment(e.end).format('LT');
-                return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
+                return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
             }, 'Current reservations:');
+            return outputFormat(eventsText);
         }).catch(errorMessage => notifyFunc(errorMessage));
     };
 
     const getFreeSlotDuration = () => {
         return calendar.process().then(events => {
-            return events.reduce((prev, e) => {
+            const eventsText = events.reduce((prev, e) => {
                 const diff = moment.duration(moment(e.start).diff(moment()));
                 const diffAsHours = diff.asHours();
                 if (diffAsHours > 0 && diffAsHours < 1) {
-                    return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
+                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
                 }
                 else if (diffAsHours > 0) {
-                    return `${prev}${prev !== '' ? '\n\r' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
+                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
                 }
                 else {
                     return prev;
                 }
-            }, 'Free for the next:');
+            }, 'Free for:');
+            return outputFormat(eventsText);
         }).catch(errorMessage => notifyFunc(errorMessage));
     };
 
     // default empty notify function
-    let notifyFunc = (output) => {};
-    
+    let notifyFunc = (output) => { };
+
     return {
         setNotifyFunc(func) {
             notifyFunc = func;
@@ -126,7 +130,14 @@ const bot = () => {
                 return getCurrentEvents();
             }
             else if (msg === 'cmd') {
-                return Promise.resolve(`\`\`\`anyone: Is there anyone at the office\ntemp: Office temperature\nfree: List free meeting rooms\nreservations: List next meeting room reservations\nlunch: Suggest a lunch place\`\`\``);
+                const commands = [
+                    'anyone: Is there anyone at the office',
+                    'temp: Office temperature',
+                    'free: List free meeting rooms',
+                    'reservations: List next meeting room reservations',
+                    'lunch: Suggest a lunch place'
+                ];
+                return Promise.resolve(outputFormat(commands.join('\n')));
             }
 
             return Promise.resolve("Hello! Write _cmd_ to get commands I know.");

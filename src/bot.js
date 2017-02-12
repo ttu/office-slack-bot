@@ -47,7 +47,8 @@ const bot = () => {
                         temperature: response.Temperature / 100,
                         humidity: response.Humidity,
                         noise: response.Noise,
-                        light: response.Light
+                        light: response.Light,
+                        time: moment(response.MeasurementTime).format('HH:mm DD.MM.')
                     };
                     resolve(sensorData);
                 }).catch(errorMessag => {
@@ -77,8 +78,8 @@ const bot = () => {
     const getCurrentEvents = () => {
         return calendar.process(2).then(events => {
             const eventsText = events.reduce((prev, e) => {
-                const start = moment(e.start).format('L LT');
-                const end = moment(e.end).format('LT');
+                const start = moment(e.start).format('DD.MM. HH:mm');
+                const end = moment(e.end).format('HH:mm');
                 return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
             }, 'Current reservations:');
             return outputFormat(eventsText);

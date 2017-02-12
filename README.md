@@ -1,34 +1,55 @@
 Slack Bot
 ------------------------------
 
-Uses BotKit to handle communication with Slack
+Slack bot for office use.
+
+```
+anyone: Is there anyone at the office
+temp: Office temperature
+free: List free meeting rooms
+reservations: List next meeting room reservations
+lunch: Suggest a lunch place
+```
+
+* Bot sends reply to the channel or private chat where command was sent from
+* Sends exceptions and errors to the user defined in the configuration file
 
 ## Functionality
 
-#### Get Temperture
-
-Get `/api/data/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration.
-
-```
-{"name":"5krs","temperature":21.25,"humidity":23,"noise":47,"light":124}
-
-{"name":"6krs","temperature":22.64,"humidity":23,"noise":45,"light":571}
-``` 
 #### Anyone at the office
 
-Get `/api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration. If any of the requests return true, then there is someone at the office.
+Returns Office has people or Office is empty, depending if there is currently people at the office.
 
-#### Suggest a lunch place 
+Get `/api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration file. If any of the requests return true, then there is someone at the office.
 
-Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list. Office location is defined in the configuration.js. 
+#### Get Temperture
+
+Returns lates sensors data for all sensors defined in the configuration file.
+
+Get `/api/data/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi).
+
+```
+{"name":"5krs","temperature":21.25,"humidity":23,"noise":47,"light":124,"time":"11:47 19.01."}
+{"name":"6krs","temperature":22.64,"humidity":23,"noise":45,"light":571,"time":"11:47 19.01."}
+``` 
 
 #### Free meeting rooms & Current events
 
-Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/quickstart/nodejs) to get events. Meeting room calendars are defined in configuration.js.
+Free meeting rooms lists rooms that are free and duration how long they are available. Current events lists next 2 events for each calendar defined in the configuration file.
 
-Execute `npm run create_token` to store authentication token to json-file. This file is not in version control.
+Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/) to get events. Meeting room calendars are defined in configuration file.
 
-Free meeting rooms list rooms that are free and duration how long they are avaialble. Current events lists next 2 events for each calendar defined in the configuration.js.
+Requirements:
+* Execute Step 1: Turn on the Google Calendar API from [quicksart](https://developers.google.com/google-apps/calendar/quickstart/nodejs). Save file as client_secret.json
+* Execute `npm run create_token` to store authentication token to json-file. This file is not in version control
+* Both files need to be in the workspace root
+
+#### Suggest a lunch place 
+
+Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list. Office location is defined in the configuration file. 
+
+Requirements:
+* [Get an API key](https://developers.google.com/places/web-service/get-api-key)
 
 ### ConsoleApp for testing
 
@@ -38,7 +59,7 @@ Console app wraps same functionality as BotKit, so it works with same commands a
 $ npm run console
 ```
 
-### Configuration
+### Configuration file
 
 configuration.js containts tokens, passwords, locations, sensors etc. Some of these can be given also as environment variables
 
@@ -49,6 +70,7 @@ configuration.js:
 module.exports = {
     botToken: 'xxxx',
     homeChannelId: 'xxxx',
+    slackAdminUserId: 'xxxx',
     apiUserName: 'xxxx',
     apiPassword: 'xxxx',
     apiUrl: 'xxxx',

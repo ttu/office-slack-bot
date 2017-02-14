@@ -100,8 +100,8 @@ const bot = () => {
                 else {
                     return prev;
                 }
-            }, 'Free for:');
-            return outputFormat(eventsText);
+            }, '');
+            return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for next:\n' + eventsText);
         }).catch(errorMessage => notifyFunc(errorMessage));
     };
 

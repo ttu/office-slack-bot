@@ -14,12 +14,29 @@ const botInstance = controller.spawn({ token: BOT_TOKEN }).startRTM();
 
 controller.on(['direct_message', 'direct_mention'], (bot, message) => {
     myBot.handle(message.text).then(response => {
-        bot.reply(message, response);
+        if (response)
+            bot.reply(message, response);
     });
 });
 
 myBot.setNotifyFunc((output) => {
     botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
         conversation.say(output);
+    });
+});
+
+process.on('uncaughtException', (exception) => {
+    console.log(exception);
+    botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
+        conversation.say(exception.stack);
+        // Wait before exit so bot has time to send the last message
+        setTimeout(() => process.exit(), 5000);
+    });
+});
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
+        conversation.say('Unhandled Rejection at Promise ' + reason.message);
     });
 });

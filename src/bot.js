@@ -72,7 +72,10 @@ const bot = () => {
     const getLunchPlace = () => {
         return restaurants.getRestaurant().then(response => {
             return `How about ${response}`;
-        }).catch(errorMessage => notifyFunc(errorMessage));
+        }).catch(error => {
+            notifyFunc(error.stack || error);
+            return 'Error while fetching lunch places';
+        });
     };
 
     const getCurrentEvents = () => {
@@ -83,7 +86,10 @@ const bot = () => {
                 return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
             }, 'Current reservations:');
             return outputFormat(eventsText);
-        }).catch(errorMessage => notifyFunc(errorMessage));
+        }).catch(error => { 
+            notifyFunc(error.stack || error);
+            return 'Error with current reservations';
+        });
     };
 
     const getFreeSlotDuration = () => {
@@ -102,7 +108,10 @@ const bot = () => {
                 }
             }, '');
             return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for next:\n' + eventsText);
-        }).catch(errorMessage => notifyFunc(errorMessage));
+        }).catch(error => {
+            notifyFunc(error.stack || error);
+            return 'Error with free meeting rooms';
+        });
     };
 
     // default empty notify function

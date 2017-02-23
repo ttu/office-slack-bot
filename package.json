@@ -2,7 +2,10 @@
   "name": "sensorapi-slack-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "engines": {
+    "node": ">=7.6.0"
+  },
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "test": "mocha -t 100000 test/*.test.js",
@@ -12,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.4.7",
     "botkit": "^0.4.2",
     "google-auth-library": "^0.10.0",
     "googleapis": "^16.1.0",

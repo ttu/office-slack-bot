@@ -1,5 +1,5 @@
-var Promise = require('bluebird');
-var fs = Promise.promisifyAll(require('fs'));
+const Promise = require('bluebird');
+const fs = Promise.promisifyAll(require('fs'));
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 
@@ -21,7 +21,7 @@ class CalendarService {
     }
 
     async getOAuthClient() {
-        const secretPromise = fs.readFileAsync('client_secret2.json');
+        const secretPromise = fs.readFileAsync('client_secret.json');
         const tokenPromise = fs.readFileAsync('calendar-authToken.json');
         const secret = await secretPromise;
         const token = await tokenPromise;

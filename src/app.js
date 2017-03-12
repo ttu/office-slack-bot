@@ -19,6 +19,11 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
     });
 });
 
+controller.on('rtm_close', () => {
+    // Just exit. Forver or something similair will restart this
+    process.exit();
+});
+
 myBot.setNotifyFunc((output) => {
     botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
         conversation.say(output);

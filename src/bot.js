@@ -84,7 +84,7 @@ const bot = () => {
                 const start = moment(e.start).format('DD.MM. HH:mm');
                 const end = moment(e.end).format('HH:mm');
                 return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
-            }, 'Current reservations:');
+            }, 'Next 2 reservations:');
             return outputFormat(eventsText);
         }).catch(error => { 
             notifyFunc(error.stack || error);

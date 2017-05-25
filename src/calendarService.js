@@ -9,11 +9,23 @@ class CalendarService {
     }
 
     process(eventCount = 1) {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
                 const events = await this.getCurrentOrNextEvent(eventCount, client);
                 resolve(events);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    book(meetingRoom, durationMinutes = 15) {
+        return new Promise(async(resolve, reject) => {
+            try {
+                const client = await this.getOAuthClient();
+                const bookingResult = await this.bookMeetingRoom(meetingRoom, durationMinutes, client);
+                resolve(bookingResult);
             } catch (err) {
                 reject(err);
             }
@@ -72,6 +84,43 @@ class CalendarService {
             return results.reduce((p, [success, result]) => {
                 return success ? p.concat(result) : p;
             }, []);
+        });
+    }
+
+    async bookMeetingRoom(roomName, durationMinutes, auth) {
+        if (!roomName)
+            return Promise.resolve(`Define room name. ${this.calendars.map(c => c.name)}`)
+        
+        var selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+
+        if (selected.length == 0)
+            return Promise.resolve(`${roomName} not found.  ${this.calendars.map(c => c.name)}`)
+
+        const event = {
+            'summary': 'Quick booking from SlackBot',
+            'description': 'This is a quick booking made from SlackBot.',
+            'start': {
+                'dateTime': (new Date()).toISOString()
+            },
+            'end': {
+                'dateTime': new Date(new Date().getTime() + durationMinutes * 60000)
+            },
+            'attendees': [{
+                'email': 'test@example.com'
+            }]
+        };
+
+        return new Promise((resolve, reject) => {
+            google.calendar('v3').events.insert({
+                'auth': auth,                
+                'calendarId': selected[0].id,
+                'resource': event
+            }, (err, response) => {
+                if (err) {
+                    reject('The API returned an error: ' + err);
+                }
+                resolve('Booked');
+            });
         });
     }
 }

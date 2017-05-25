@@ -23,7 +23,8 @@ const bot = () => {
     const temp = ['temp', 'temperature'];
     const lunch = ['lunch', 'lounas'];
     const free = ['free', 'vapaa'];
-    const reservations = ['reservations', 'current', 'neukkarit'];
+    const reservations = ['reservations', 'current', 'neukkarit', 'rooms'];
+    const book = ['book'];
 
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -114,6 +115,16 @@ const bot = () => {
         });
     };
 
+    const bookMeetingRoom = (params) => {
+        let duration = 15;
+        let room = params[1];
+        return calendar.book(room, duration).then(result => {
+            return result;
+        }).catch(error => {
+            return 'Error with booking a meeting room - ' + (error.message || error);
+        });
+    }
+
     // default empty notify function
     let notifyFunc = (output) => { };
 
@@ -139,12 +150,16 @@ const bot = () => {
             else if (reservations.some(e => e === msg)) {
                 return getCurrentEvents();
             }
+            else if (book.some(e => e === msg.split(" ")[0])) {
+                return bookMeetingRoom(msg.split(" "));
+            }
             else if (msg === 'cmd') {
                 const commands = [
                     'anyone: Is there anyone at the office',
-                    'temp: Office temperature',
-                    'free: List free meeting rooms',
-                    'reservations: List next meeting room reservations',
+                    'temp | temperature: Office temperature',
+                    'free | vapaa: List free meeting rooms',
+                    'reservations | rooms: List next meeting room reservations',
+                    'book [roomname]: Book a meeting room for 15min',
                     'lunch: Suggest a lunch place'
                 ];
                 return Promise.resolve(outputFormat(commands.join('\n')));

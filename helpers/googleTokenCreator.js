@@ -9,7 +9,7 @@ const readline = require('readline');
 const googleAuth = require('google-auth-library');
 
 // If modifying these scopes, delete your previously saved credentials
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 const TOKEN_DIR = __dirname + "/";
 const TOKEN_PATH = TOKEN_DIR + 'calendar-authToken.json';
 

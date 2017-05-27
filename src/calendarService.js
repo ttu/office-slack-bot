@@ -12,7 +12,7 @@ class CalendarService {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
-                const events = await this.getCurrentOrNextEvent(eventCount, client);
+                const events = await this.getCurrentOrNextEvents(eventCount, client);
                 resolve(events);
             } catch (err) {
                 reject(err);
@@ -49,35 +49,9 @@ class CalendarService {
         return oauth2Client;
     }
 
-    async getCurrentOrNextEvent(eventCount, auth) {
+    async getCurrentOrNextEvents(eventCount, auth) {
         const promises = this.calendars.map(c => {
-            const params = {
-                auth: auth,
-                calendarId: c.id,
-                timeMin: (new Date()).toISOString(),
-                maxResults: eventCount,
-                singleEvents: true,
-                orderBy: 'startTime'
-            };
-            return new Promise((resolve, reject) => {
-                google.calendar('v3').events.list(params, (err, response) => {
-                    if (err) {
-                        resolve([false, 'The API returned an error: ' + err]);
-                        return;
-                    }
-
-                    const events = response.items.map(e => {
-                        return {
-                            name: c.name,
-                            start: e.start.dateTime || e.start.date,
-                            end: e.end.dateTime || e.end.date,
-                            summary: e.summary
-                        }
-                    });
-
-                    resolve([true, events]);
-                });
-            });
+            return this.getCalendarEvents(c.name, c.id, eventCount, auth);
         }, this);
 
         return await Promise.all(promises).then(results => {
@@ -87,23 +61,61 @@ class CalendarService {
         });
     }
 
+    async getCalendarEvents(calendarName, calendarId, eventCount, auth) {
+        const params = {
+            auth: auth,
+            calendarId: calendarId,
+            timeMin: (new Date()).toISOString(),
+            maxResults: eventCount,
+            singleEvents: true,
+            orderBy: 'startTime'
+        };
+        return new Promise((resolve, reject) => {
+            google.calendar('v3').events.list(params, (err, response) => {
+                if (err) {
+                    resolve([false, 'The API returned an error: ' + err]);
+                    return;
+                }
+
+                const events = response.items.map(e => {
+                    return {
+                        name: calendarName,
+                        start: e.start.dateTime || e.start.date,
+                        end: e.end.dateTime || e.end.date,
+                        summary: e.summary
+                    }
+                });
+
+                resolve([true, events]);
+            });
+        });
+    }
+
     async bookMeetingRoom(roomName, durationMinutes, auth) {
         if (!roomName)
-            return Promise.resolve(`Define room name. ${this.calendars.map(c => c.name)}`)
-        
+            return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
+
         var selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
 
         if (selected.length == 0)
-            return Promise.resolve(`${roomName} not found.  ${this.calendars.map(c => c.name)}`)
+            return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`)
+
+        const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
+
+        const start = new Date();
+        const end = new Date(new Date().getTime() + durationMinutes * 60000);
+
+        if (success && nextReservation[0] && new Date(nextReservation[0].start) < end)
+             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes. Already reserved.`);
 
         const event = {
-            'summary': 'Quick booking from SlackBot',
-            'description': 'This is a quick booking made from SlackBot.',
+            'summary': 'SlackBot quick booking',
+            'description': 'Quick booking made from SlackBot.',
             'start': {
-                'dateTime': (new Date()).toISOString()
+                'dateTime': start
             },
             'end': {
-                'dateTime': new Date(new Date().getTime() + durationMinutes * 60000)
+                'dateTime': end
             },
             'attendees': [{
                 'email': 'test@example.com'
@@ -112,7 +124,7 @@ class CalendarService {
 
         return new Promise((resolve, reject) => {
             google.calendar('v3').events.insert({
-                'auth': auth,                
+                'auth': auth,
                 'calendarId': selected[0].id,
                 'resource': event
             }, (err, response) => {

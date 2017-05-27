@@ -87,7 +87,7 @@ const bot = () => {
                 return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
             }, 'Next 2 reservations:');
             return outputFormat(eventsText);
-        }).catch(error => { 
+        }).catch(error => {
             notifyFunc(error.stack || error);
             return 'Error with current reservations';
         });
@@ -100,11 +100,9 @@ const bot = () => {
                 const diffAsHours = diff.asHours();
                 if (diffAsHours > 0 && diffAsHours < 1) {
                     return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
-                }
-                else if (diffAsHours > 0) {
+                } else if (diffAsHours > 0) {
                     return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
-                }
-                else {
+                } else {
                     return prev;
                 }
             }, '');
@@ -117,7 +115,14 @@ const bot = () => {
 
     const bookMeetingRoom = (params) => {
         let duration = 15;
-        let room = params[1];
+
+        if (params[2] && Number.isInteger(parseInt(params[2]))) {
+            if (parseInt(params[2]) > 60)
+                return Promise.resolve(`Booking time can't be more than 60 minuts`);
+            duration = parseInt(params[2]);
+        }
+
+        const room = params[1];
         return calendar.book(room, duration).then(result => {
             return result;
         }).catch(error => {
@@ -126,7 +131,7 @@ const bot = () => {
     }
 
     // default empty notify function
-    let notifyFunc = (output) => { };
+    let notifyFunc = (output) => {};
 
     return {
         setNotifyFunc(func) {
@@ -137,29 +142,23 @@ const bot = () => {
 
             if (anyone.some(e => e === msg)) {
                 return hasPeople();
-            }
-            else if (temp.some(e => e === msg)) {
+            } else if (temp.some(e => e === msg)) {
                 return temperature();
-            }
-            else if (lunch.some(e => e === msg)) {
+            } else if (lunch.some(e => e === msg)) {
                 return getLunchPlace();
-            }
-            else if (free.some(e => e === msg)) {
+            } else if (free.some(e => e === msg)) {
                 return getFreeSlotDuration();
-            }
-            else if (reservations.some(e => e === msg)) {
+            } else if (reservations.some(e => e === msg)) {
                 return getCurrentEvents();
-            }
-            else if (book.some(e => e === msg.split(" ")[0])) {
+            } else if (book.some(e => e === msg.split(" ")[0])) {
                 return bookMeetingRoom(msg.split(" "));
-            }
-            else if (msg === 'cmd') {
+            } else if (msg === 'cmd') {
                 const commands = [
                     'anyone: Is there anyone at the office',
                     'temp | temperature: Office temperature',
                     'free | vapaa: List free meeting rooms',
-                    'reservations | rooms: List next meeting room reservations',
-                    'book [roomname]: Book a meeting room for 15min',
+                    'rooms | reservations: List next meeting room reservations',
+                    'book [room name] [optional duration in minutes]: Book a meeting room (default 15min)',
                     'lunch: Suggest a lunch place'
                 ];
                 return Promise.resolve(outputFormat(commands.join('\n')));

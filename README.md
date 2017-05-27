@@ -4,14 +4,15 @@ Slack Bot
 Slack bot for office use.
 
 ```
-anyone: Is there anyone at the office
-temp: Office temperature
-free: List free meeting rooms
-reservations: List next meeting room reservations
-lunch: Suggest a lunch place
+Is there anyone at the office
+Office temperature
+List free meeting rooms
+List next meeting room reservations
+Book a meeting room
+Suggest a lunch place
 ```
 
-* Bot sends reply to the channel or private chat where command was sent from
+* Bot sends reply to the channel or to private chat where command was sent from
 * Sends exceptions and errors to the user defined in the configuration file
 
 ## Functionality
@@ -33,11 +34,11 @@ Get `/api/data/{id}` from [Sensordata API](https://github.com/ttu/sensordata-nod
 {"name":"6krs","temperature":22.64,"humidity":23,"noise":45,"light":571,"time":"11:47 19.01."}
 ``` 
 
-#### Free meeting rooms & Current events
+#### Free meeting rooms, current events & book a room
 
-Free meeting rooms lists rooms that are free and duration how long they are available. Current events lists next 2 events for each calendar defined in the configuration file.
+Free meeting rooms lists rooms that are free and duration how long they are available. Current events lists next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available.
 
-Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/) to get events. Meeting room calendars are defined in configuration file.
+Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/). Meeting room calendars are defined in the configuration file.
 
 Requirements:
 * Execute Step 1: Turn on the Google Calendar API from [quicksart](https://developers.google.com/google-apps/calendar/quickstart/nodejs). Save file as client_secret.json

@@ -36,8 +36,7 @@ class RestaurantService {
                     if (res.body.next_page_token) {
                         const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${res.body.next_page_token}&key=${this.key}`;
                         getData(newDatas, nextPageUrl, cb);
-                    }
-                    else {
+                    } else {
                         console.log(`Found ${newDatas.length} items`);
                         cb([true, newDatas]);
                     }
@@ -67,7 +66,7 @@ class RestaurantService {
 
         if (isOld || this.updatePromise === null)
             this.refreshData();
-        
+
         return this.updatePromise.then(_ => this.data[Math.floor(Math.random() * this.data.length)]);
     }
 }

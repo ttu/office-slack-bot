@@ -3,19 +3,18 @@ Slack Bot
 
 Slack bot for office use.
 
-```
-Is there anyone at the office
-Office temperature
-List free meeting rooms
-List next meeting room reservations
-Book a meeting room
-Suggest a lunch place
-```
-
-* Bot sends reply to the channel or to private chat where command was sent from
-* Sends exceptions and errors to the user defined in the configuration file
-
 ## Functionality
+
+ * Is there anyone at the office
+ * Office temperature
+ * List free meeting rooms
+ * List next meeting room reservations
+ * Book a meeting room
+ * Suggest a lunch place
+
+Bot sends reply to the channel or to private chat where command was sent from.
+
+Sends exceptions and errors to the user defined in the configuration file (`slackAdminUserId`).
 
 #### Anyone at the office
 

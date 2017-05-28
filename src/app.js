@@ -9,8 +9,17 @@ const HOME_CHANNEL_ID = process.env.CHANNEL_ID || Config.homeChannelId;
 
 const myBot = require('./bot');
 
-const controller = Botkit.slackbot({ debug: false });
-const botInstance = controller.spawn({ token: BOT_TOKEN }).startRTM();
+const controller = Botkit.slackbot({
+    debug: false
+});
+
+const botInstance = controller.spawn({
+    token: BOT_TOKEN
+}).startRTM();
+
+const userConfig = {
+    user: Config.slackAdminUserId
+};
 
 controller.on(['direct_message', 'direct_mention'], (bot, message) => {
     myBot.handle(message.text).then(response => {
@@ -25,14 +34,14 @@ controller.on('rtm_close', () => {
 });
 
 myBot.setNotifyFunc((output) => {
-    botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
+    botInstance.startPrivateConversation(userConfig, (err, conversation) => {
         conversation.say(output);
     });
 });
 
 process.on('uncaughtException', (exception) => {
     console.log(exception);
-    botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
+    botInstance.startPrivateConversation(userConfig, (err, conversation) => {
         conversation.say(exception.stack);
         // Wait before exit so bot has time to send the last message
         setTimeout(() => process.exit(), 5000);
@@ -41,7 +50,7 @@ process.on('uncaughtException', (exception) => {
 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    botInstance.startPrivateConversation({ user: Config.slackAdminUserId }, function (err, conversation) {
+    botInstance.startPrivateConversation(userConfig, (err, conversation) => {
         conversation.say('Unhandled Rejection at Promise ' + reason.message);
     });
 });

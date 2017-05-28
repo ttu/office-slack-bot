@@ -14,7 +14,7 @@ const TOKEN_DIR = __dirname + "/";
 const TOKEN_PATH = TOKEN_DIR + 'calendar-authToken.json';
 
 // Load client secrets from a local file.
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+fs.readFile('client_secret.json', (err, content) => {
     if (err) {
         console.log('Error loading client secret file: ' + err);
         return;
@@ -31,7 +31,7 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
  */
 function authorize(credentials) {
     // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, function (err, token) {
+    fs.readFile(TOKEN_PATH, (err, token) => {
         if (err) {
             var clientSecret = credentials.installed.client_secret;
             var clientId = credentials.installed.client_id;
@@ -61,9 +61,9 @@ function getNewToken(oauth2Client) {
         input: process.stdin,
         output: process.stdout
     });
-    rl.question('Enter the code from that page here: ', function (code) {
+    rl.question('Enter the code from that page here: ', (code) => {
         rl.close();
-        oauth2Client.getToken(code, function (err, token) {
+        oauth2Client.getToken(code, (err, token) => {
             if (err) {
                 console.log('Error while trying to retrieve access token', err);
                 return;

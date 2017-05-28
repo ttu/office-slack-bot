@@ -126,6 +126,7 @@ const bot = () => {
         return calendar.book(room, duration).then(result => {
             return result;
         }).catch(error => {
+            notifyFunc((error.message || error));
             return 'Error with booking a meeting room - ' + (error.message || error);
         });
     }

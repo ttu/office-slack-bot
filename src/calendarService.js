@@ -106,7 +106,7 @@ class CalendarService {
         const end = new Date(new Date().getTime() + durationMinutes * 60000);
 
         if (success && nextReservation[0] && new Date(nextReservation[0].start) < end)
-             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes. Already reserved.`);
+            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes. Already reserved.`);
 
         const event = {
             'summary': 'SlackBot quick booking',
@@ -116,10 +116,7 @@ class CalendarService {
             },
             'end': {
                 'dateTime': end
-            },
-            'attendees': [{
-                'email': 'test@example.com'
-            }]
+            }
         };
 
         return new Promise((resolve, reject) => {

@@ -8,7 +8,7 @@ class CalendarService {
         this.calendars = calendars;
     }
 
-    process(eventCount = 1) {
+    getEvents(eventCount = 1) {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
@@ -20,7 +20,7 @@ class CalendarService {
         });
     }
 
-    book(meetingRoom, durationMinutes = 15) {
+    bookEvent(meetingRoom, durationMinutes = 15) {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
@@ -128,7 +128,7 @@ class CalendarService {
                 if (err) {
                     reject('The API returned an error: ' + err);
                 }
-                resolve('Booked');
+                resolve(`${selected[0].name} booked for ${durationMinutes} minutes`);
             });
         });
     }

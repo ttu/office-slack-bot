@@ -20,13 +20,13 @@ Sends exceptions and errors to the user defined in the configuration file (`slac
 
 Returns Office has people or Office is empty, depending if there is currently people at the office.
 
-Get `/api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration file. If any of the requests return true, then there is someone at the office.
+`GET /api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration file. If any of the requests return true, then there is someone at the office.
 
 #### Get Temperture
 
 Returns lates sensors data for all sensors defined in the configuration file.
 
-Get `/api/data/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi).
+`GET /api/data/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi).
 
 ```
 {"name":"5krs","temperature":21.25,"humidity":23,"noise":47,"light":124,"time":"11:47 19.01."}

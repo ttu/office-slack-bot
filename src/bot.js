@@ -74,13 +74,13 @@ const bot = () => {
         return restaurants.getRestaurant().then(response => {
             return `How about ${response}`;
         }).catch(error => {
-            notifyFunc(error.stack || error);
+            notifyFunc('getLunchPlace failed: ' + (error.stack || error));
             return 'Error while fetching lunch places';
         });
     };
 
     const getCurrentEvents = () => {
-        return calendar.process(2).then(events => {
+        return calendar.getEvents(2).then(events => {
             const eventsText = events.reduce((prev, e) => {
                 const start = moment(e.start).format('DD.MM. HH:mm');
                 const end = moment(e.end).format('HH:mm');
@@ -88,13 +88,13 @@ const bot = () => {
             }, 'Next 2 reservations:');
             return outputFormat(eventsText);
         }).catch(error => {
-            notifyFunc(error.stack || error);
+            notifyFunc('getCurrentEvents failed: ' + (error.stack || error));
             return 'Error with current reservations';
         });
     };
 
     const getFreeSlotDuration = () => {
-        return calendar.process().then(events => {
+        return calendar.getEvents().then(events => {
             const eventsText = events.reduce((prev, e) => {
                 const diff = moment.duration(moment(e.start).diff(moment()));
                 const diffAsHours = diff.asHours();
@@ -108,7 +108,7 @@ const bot = () => {
             }, '');
             return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for next:\n' + eventsText);
         }).catch(error => {
-            notifyFunc(error.stack || error);
+            notifyFunc('getFreeSlotDuration failed: ' + (error.stack || error));
             return 'Error with free meeting rooms';
         });
     };
@@ -117,16 +117,19 @@ const bot = () => {
         let duration = 15;
 
         if (params[2] && Number.isInteger(parseInt(params[2]))) {
-            if (parseInt(params[2]) > 60)
-                return Promise.resolve(`Booking time can't be more than 60 minuts`);
-            duration = parseInt(params[2]);
+            const d = parseInt(params[2]);
+            if (d > 60)
+                return Promise.resolve(`Booking time can't be more than 60 minutes`);
+            if (d < 1)
+                return Promise.resolve(`Booking time can't be less than 1 minute`);
+            duration = d;
         }
 
         const room = params[1];
-        return calendar.book(room, duration).then(result => {
+        return calendar.bookEvent(room, duration).then(result => {
             return result;
         }).catch(error => {
-            notifyFunc((error.message || error));
+            notifyFunc(`bookMeetingRoom failed:  ${params}` + (error.message || error));
             return 'Error with booking a meeting room - ' + (error.message || error);
         });
     }

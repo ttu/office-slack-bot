@@ -63,6 +63,8 @@ $ npm run console
 
 configuration.js containts tokens, passwords, locations, sensors etc. Some of these can be given also as environment variables
 
+If `allowGuestsToUse` is set to _false_, then restricted users will get an error messages when trying to send messages to the bot. 
+
 configuration.js:
 ```js
 'use strict';
@@ -71,6 +73,7 @@ module.exports = {
     botToken: 'xxxx',
     homeChannelId: 'xxxx',
     slackAdminUserId: 'xxxx',
+    allowGuestsToUse: false,
     apiUserName: 'xxxx',
     apiPassword: 'xxxx',
     apiUrl: 'xxxx',

@@ -22,9 +22,16 @@ const userConfig = {
 };
 
 controller.on(['direct_message', 'direct_mention'], (bot, message) => {
-    myBot.handle(message.text).then(response => {
-        if (response)
-            bot.reply(message, response);
+    bot.api.users.info({ user: message.user }, (error, response) => {
+        if (config.allowGuestsToUse ||
+            (!response.user.is_restricted && !response.user.is_ultra_restricted)) {
+            myBot.handle(message.text).then(response => {
+                if (response)
+                    bot.reply(message, response);
+            });
+        } else {
+            bot.reply(message, 'No rights to chat with Bot');
+        }
     });
 });
 

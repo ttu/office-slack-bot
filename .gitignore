@@ -2,6 +2,8 @@ configuration.js
 client_secret.json
 calendar-authToken.json
 
+package-lock.json
+
 # Logs
 logs
 *.log

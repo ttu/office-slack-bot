@@ -156,19 +156,19 @@ const bot = () => {
                 return getCurrentEvents();
             } else if (book.some(e => e === msg.split(" ")[0])) {
                 return bookMeetingRoom(msg.split(" "));
-            } else if (msg === 'cmd') {
+            } else if (msg === 'cmd' || msg === 'help') {
                 const commands = [
                     'anyone: Is there anyone at the office',
                     'temp | temperature: Office temperature',
                     'free | vapaa: List free meeting rooms',
                     'rooms | reservations: List next meeting room reservations',
-                    'book [room name] [optional duration in minutes]: Book a meeting room (default 15min)',
+                    'book <room name> [duration in minutes (default: 15 min)]: Book a meeting room',
                     'lunch: Suggest a lunch place'
                 ];
                 return Promise.resolve(outputFormat(commands.join('\n')));
             }
 
-            return Promise.resolve("Hello! Write _cmd_ to get commands I know.");
+            return Promise.resolve("Hello! Write _cmd_ or _help_ to get commands I know.");
         }
     }
 }

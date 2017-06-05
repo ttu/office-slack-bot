@@ -84,7 +84,8 @@ module.exports = {
         { id: 'xxx', name: 'xx'}        
     ],
     meetingRooms: [
-        { name: 'xxxx', id: 'xxxx'},
+        { name: 'xxxx', id: 'xxxx'}
+    ]
 };
 ```
 

@@ -37,7 +37,7 @@ Returns lates sensors data for all sensors defined in the configuration file.
 
 Free meeting rooms lists rooms that are free and duration how long they are available. Current events lists next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available.
 
-Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/). Meeting room calendars are defined in the configuration file.
+Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/). Meeting room calendars are defined in the configuration file. Booker info from [Slack User Info](https://api.slack.com/methods/users.info).
 
 Requirements:
 * Execute Step 1: Turn on the Google Calendar API from [quicksart](https://developers.google.com/google-apps/calendar/quickstart/nodejs). Save file as client_secret.json

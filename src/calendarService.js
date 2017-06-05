@@ -20,11 +20,11 @@ class CalendarService {
         });
     }
 
-    bookEvent(meetingRoom, durationMinutes = 15) {
+    bookEvent(booker, meetingRoom, durationMinutes = 15) {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
-                const bookingResult = await this.bookMeetingRoom(meetingRoom, durationMinutes, client);
+                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
                 resolve(bookingResult);
             } catch (err) {
                 reject(err);
@@ -91,7 +91,7 @@ class CalendarService {
         });
     }
 
-    async bookMeetingRoom(roomName, durationMinutes, auth) {
+    async bookMeetingRoom(booker, roomName, durationMinutes, auth) {
         if (!roomName)
             return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
 
@@ -109,14 +109,17 @@ class CalendarService {
             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes. Already reserved.`);
 
         const event = {
-            'summary': 'SlackBot quick booking',
-            'description': 'Quick booking made from SlackBot.',
+            'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
+            'description': `Quick booking made from SlackBot for ${booker.name} - ${booker.email}`,
             'start': {
                 'dateTime': start
             },
             'end': {
                 'dateTime': end
-            }
+            },
+            'attendees': [{
+                'email': booker.email
+            }]
         };
 
         return new Promise((resolve, reject) => {

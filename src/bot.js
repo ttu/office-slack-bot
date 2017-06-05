@@ -113,7 +113,8 @@ const bot = () => {
         });
     };
 
-    const bookMeetingRoom = (params) => {
+    const bookMeetingRoom = (params, booker) => {
+        const room = params[1];
         let duration = 15;
 
         if (params[2] && Number.isInteger(parseInt(params[2]))) {
@@ -125,8 +126,7 @@ const bot = () => {
             duration = d;
         }
 
-        const room = params[1];
-        return calendar.bookEvent(room, duration).then(result => {
+        return calendar.bookEvent(booker, room, duration).then(result => {
             return result;
         }).catch(error => {
             notifyFunc(`bookMeetingRoom failed:  ${params}` + (error.message || error));
@@ -141,7 +141,7 @@ const bot = () => {
         setNotifyFunc(func) {
             notifyFunc = func;
         },
-        handle(message) {
+        handle(message, caller) {
             const msg = message.toLowerCase();
 
             if (anyone.some(e => e === msg)) {
@@ -155,7 +155,7 @@ const bot = () => {
             } else if (reservations.some(e => e === msg)) {
                 return getCurrentEvents();
             } else if (book.some(e => e === msg.split(" ")[0])) {
-                return bookMeetingRoom(msg.split(" "));
+                return bookMeetingRoom(msg.split(" "), caller);
             } else if (msg === 'cmd' || msg === 'help') {
                 const commands = [
                     'anyone: Is there anyone at the office',

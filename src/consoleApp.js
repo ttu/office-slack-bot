@@ -10,5 +10,5 @@ var rl = readline.createInterface({
 });
 
 rl.on('line', function(line){
-    myBot.handle(line).then(result => console.log(result));
+    myBot.handle(line, { name: 'console', email: 'console@test.com' }).then(result => console.log(result));
 });

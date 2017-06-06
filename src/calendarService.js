@@ -3,6 +3,7 @@ const fs = Promise.promisifyAll(require('fs'));
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 const moment = require('moment');
+moment.locale('fi');
 
 class CalendarService {
     constructor(calendars) {
@@ -125,8 +126,6 @@ class CalendarService {
         const overlappingReservations = upcomingReservations.filter(reservation =>
                 (end >= reservation.start && end < reservation.end) || (start <= reservation.end && start > reservation.start));
 
-        // const overlappingReservations = upcomingReservations.filter(reservation => {
-        // });
         if (overlappingReservations.length > 0)
             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format()}. Room is already reserved from ${moment(overlappingReservations[0].start).format()} till ${moment(overlappingReservations[0].end).format()}.`);
 

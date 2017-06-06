@@ -19,11 +19,11 @@ const calendar = new CalendarService(Config.meetingRooms);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
-    const anyone = ['people', 'anyone', 'any'];
-    const temp = ['temp', 'temperature'];
-    const lunch = ['lunch', 'lounas'];
-    const free = ['free', 'vapaa'];
-    const reservations = ['reservations', 'current', 'neukkarit', 'rooms'];
+    const anyone = ['anyone'];
+    const temp = ['temp'];
+    const lunch = ['lunch'];
+    const free = ['free'];
+    const reservations = ['rooms'];
     const book = ['book'];
     const cancel = ['cancel']; // Cancel reservation
 
@@ -168,50 +168,6 @@ const bot = () => {
         if(!start.isValid())
             return Promise.resolve(`Invalid date`);
 
-        /*
-        let duration = 15;
-        if (params[2] && Number.isInteger(parseInt(params[2]))) {
-            const d = parseInt(params[2]);
-            if (d > 60)
-                return Promise.resolve(`Booking time can't be more than 60 minutes`);
-            if (d < 1)
-                return Promise.resolve(`Booking time can't be less than 1 minute`);
-            duration = d;
-        }
-
-
-        let start = moment();
-        if (params[3]) {
-            let timeParam = params.slice(3).join(" ");
-            console.log(timeParam);
-            if (timeParam != "now") {
-                start.minute(start.minute() + 1);
-
-                let parsedStart = new Date(timeParam);
-                if (parsedStart === parsedStart) {
-                    // Not NaN
-                    if(moment(parsedStart).isBefore(start)) {
-                        console.log(JSON.stringify(parsedStart, null, 4));
-                        return Promise.resolve(`Cannot book a meeting in the past`);
-                    }
-                    start = moment(parsedStart);
-                } else {
-                    let parsedTime = moment(timeParam, ['H:m', 'HH:m', 'H:mm', 'HH:mm']);
-                    if(parsedTime.isValid()) {
-                        start = parsedTime;
-                        if(moment(parsedStart).isBefore(start)) {
-                            console.log(JSON.stringify(parsedStart, null, 4));
-                            return Promise.resolve(`Cannot book a meeting in the past`);
-                        }
-                    } else {
-                        notifyFunc(`Invalid start time, defaulting to ${moment(start).format()}`);
-                    }
-                }
-            }
-        }
-        console.log(JSON.stringify(start, null, 4));
-        */
-
         return calendar.bookEvent(booker, room, start.toDate(), duration).then(result => {
             return result;
         }).catch(error => {
@@ -255,20 +211,51 @@ const bot = () => {
                 return bookMeetingRoom(msg.split(" "), caller);
             } else if (cancel.some(e => e === msg.split(" ")[0])) {
                 return cancelMeetingRoom(msg.split(" "), caller);
-            } else if (msg === 'cmd' || msg === 'help') {
-                const commands = [
-                    'anyone: Is there anyone at the office',
-                    'temp | temperature: Office temperature',
-                    'free | vapaa: List free meeting rooms',
-                    'rooms | reservations: List next meeting room reservations',
-                    'book <room name> [duration in minutes (default: 15 min)]: Book a meeting room',
-                    'cancel: Cancel your latest meeting booked by me',
-                    'lunch: Suggest a lunch place'
-                ];
-                return Promise.resolve(outputFormat(commands.join('\n')));
+            } else if (msg === 'help') {
+                const help = `SlackBot usage:
+Options:
+  anyone        Is there anyone in the office
+  temp          Get the office temperature
+  free          List free meeting rooms
+  rooms         List upcoming meeting room reservations
+  book          Book a meeting room (more below)
+  cancel        Cancel a meeting (more below)
+  lunch         Suggest a lunch place
+  help          View this message
+
+Booking a room:
+  book <room> [arguments...]
+  Arguments can be:
+    - Duration:
+      - Default: 15 min
+      - Format: __min
+      - Has to be more than 1 minute and less than 120 minutes
+    - Start time:
+      - Default: now
+      - Format: hh:mm, hh.mm or 'now'
+      - Can't be in the past
+    - Start date:
+      - Default: today
+      - Format: ISO 8601, RFC 2822 Date time or JavaScript Date.parse compatible
+      - Can't be in the past
+  Examples:
+    # Book room xxx for 15 minutes starting now
+    book xxx
+    # Book the same room for 15 minutes starting 13:00
+    book xxx 13:00
+    # Book for 25 minutes in the UNIX end of time
+    book xxx 2038-01-19 25min 03:14
+    # Note the free order of arguments!
+
+Cancelling a reservation:
+  cancel <room>
+  This command will cancel the first meeting that meets the following criteria:
+    - The reservation was placed by SlackBot
+    - The canceller is the same person that booked the room`
+                return Promise.resolve(outputFormat(help));
             }
 
-            return Promise.resolve("Hello! Write _cmd_ or _help_ to get commands I know.");
+            return Promise.resolve("Hello! Write or _help_ to get commands I know.");
         }
     }
 }

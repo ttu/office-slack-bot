@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
+const moment = require('moment');
 
 class CalendarService {
     constructor(calendars) {
@@ -20,12 +21,24 @@ class CalendarService {
         });
     }
 
-    bookEvent(booker, meetingRoom, durationMinutes = 15) {
+    bookEvent(booker, meetingRoom, startTime, durationMinutes = 15) {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
-                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
+                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, startTime, durationMinutes, client);
                 resolve(bookingResult);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    cancelEvent(canceller, meetingRoom) {
+        return new Promise(async(resolve, reject) => {
+            try {
+                const client = await this.getOAuthClient();
+                const cancelResult = await this.cancelMeeting(canceller, meetingRoom, client);
+                resolve(cancelResult);
             } catch (err) {
                 reject(err);
             }
@@ -73,16 +86,19 @@ class CalendarService {
         return new Promise((resolve, reject) => {
             google.calendar('v3').events.list(params, (err, response) => {
                 if (err) {
-                    resolve([false, 'The API returned an error: ' + err]);
+                    resolve([false, 'The API (calendar.events.list) returned an error: ' + err]);
                     return;
                 }
 
                 const events = response.items.map(e => {
                     return {
+                        id: e.id,
                         name: calendarName,
                         start: e.start.dateTime || e.start.date,
                         end: e.end.dateTime || e.end.date,
-                        summary: e.summary
+                        summary: e.summary,
+                        description: e.description,
+                        attendees: e.attendees
                     }
                 });
 
@@ -91,7 +107,7 @@ class CalendarService {
         });
     }
 
-    async bookMeetingRoom(booker, roomName, durationMinutes, auth) {
+    async bookMeetingRoom(booker, roomName, start, durationMinutes, auth) {
         if (!roomName)
             return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
 
@@ -100,13 +116,19 @@ class CalendarService {
         if (selected.length == 0)
             return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`)
 
-        const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
+        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1000, auth);
+        if (!success)
+            return Promise.resolve(`Failed to get calendar events`);
+        console.log(JSON.stringify(upcomingReservations, null, 4));
 
-        const start = new Date();
-        const end = new Date(new Date().getTime() + durationMinutes * 60000);
+        const end = new Date(start.getTime() + durationMinutes * 60000);
+        const overlappingReservations = upcomingReservations.filter(reservation =>
+                (end >= reservation.start && end < reservation.end) || (start <= reservation.end && start > reservation.start));
 
-        if (success && nextReservation[0] && new Date(nextReservation[0].start) < end)
-            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes. Already reserved.`);
+        // const overlappingReservations = upcomingReservations.filter(reservation => {
+        // });
+        if (overlappingReservations.length > 0)
+            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format()}. Room is already reserved from ${moment(overlappingReservations[0].start).format()} till ${moment(overlappingReservations[0].end).format()}.`);
 
         const event = {
             'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
@@ -129,9 +151,40 @@ class CalendarService {
                 'resource': event
             }, (err, response) => {
                 if (err) {
-                    reject('The API returned an error: ' + err);
+                    reject(`The API (calendar.events.insert) returned an error: ${err}\ncalendarId: ${selected[0].id}\nresource: ${JSON.stringify(event, null, 4)}`);
                 }
-                resolve(`${selected[0].name} booked for ${durationMinutes} minutes`);
+                resolve(`${selected[0].name} booked for ${durationMinutes} minutes at ${moment(start).format()}`);
+            });
+        });
+    }
+
+    async cancelMeeting(canceller, roomName, auth) {
+        if(!roomName)
+            return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
+        var selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+        if(selected.length == 0)
+            return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`);
+
+        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1000, auth);
+        if (!success)
+            return Promise.resolve(`Failed to get calendar events`);
+
+        const cancellerReservations = upcomingReservations.filter(reservation =>
+                reservation.attendees.some(attendee =>
+                    attendee.email == canceller.email &&
+                    reservation.summary.includes("Quick booking made from SlackBot for")));
+        if (cancellerReservations.length == 0)
+            return Promise.resolve(`${canceller.email} has not made any room reservations - Cannot cancel`);
+
+        return new Promise((resolve, reject) => {
+            google.calendar('v3').events.delete({
+                'calendarId': selected[0].id,
+                'eventId': cancellerReservations[0].id,
+                'auth': auth
+            }, (err, response) => {
+                if (err)
+                    reject('The API (calendar.events.delete) returned an error: ' + err);
+                resolve(`Reservation of ${selected[0].name} at ${cancellerReservations[0].start.dateTime} by ${canceller.email} has been cancelled`);
             });
         });
     }

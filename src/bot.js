@@ -196,20 +196,21 @@ const bot = () => {
         },
         handle(message, caller) {
             const msg = message.toLowerCase();
+            const command = msg.split(" ")[0];
 
-            if (anyone.some(e => e === msg)) {
+            if (anyone.some(e => e === command)) {
                 return hasPeople();
-            } else if (temp.some(e => e === msg)) {
+            } else if (temp.some(e => e === command)) {
                 return temperature();
-            } else if (lunch.some(e => e === msg)) {
+            } else if (lunch.some(e => e === command)) {
                 return getLunchPlace();
-            } else if (free.some(e => e === msg)) {
+            } else if (free.some(e => e === command)) {
                 return getFreeSlotDuration();
-            } else if (reservations.some(e => e === msg)) {
+            } else if (reservations.some(e => e === command)) {
                 return getCurrentEvents();
-            } else if (book.some(e => e === msg.split(" ")[0])) {
+            } else if (book.some(e => e === command)) {
                 return bookMeetingRoom(msg.split(" "), caller);
-            } else if (cancel.some(e => e === msg.split(" ")[0])) {
+            } else if (cancel.some(e => e === command)) {
                 return cancelMeetingRoom(msg.split(" "), caller);
             } else if (msg === 'help') {
                 const help = `SlackBot usage:
@@ -255,7 +256,7 @@ Cancelling a reservation:
                 return Promise.resolve(outputFormat(help));
             }
 
-            return Promise.resolve("Hello! Write or _help_ to get commands I know.");
+            return Promise.resolve("I didn't understand. See _help_ for usage instructions.");
         }
     }
 }

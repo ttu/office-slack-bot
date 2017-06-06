@@ -99,7 +99,8 @@ class CalendarService {
                         end: e.end.dateTime || e.end.date,
                         summary: e.summary,
                         description: e.description,
-                        attendees: e.attendees
+                        attendees: e.attendees,
+                        creator: e.creator
                     }
                 });
 
@@ -120,7 +121,6 @@ class CalendarService {
         const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1000, auth);
         if (!success)
             return Promise.resolve(`Failed to get calendar events`);
-        console.log(JSON.stringify(upcomingReservations, null, 4));
 
         const end = new Date(start.getTime() + durationMinutes * 60000);
         const overlappingReservations = upcomingReservations.filter(reservation =>
@@ -169,9 +169,8 @@ class CalendarService {
             return Promise.resolve(`Failed to get calendar events`);
 
         const cancellerReservations = upcomingReservations.filter(reservation =>
-                reservation.attendees.some(attendee =>
-                    attendee.email == canceller.email &&
-                    reservation.summary.includes("Quick booking made from SlackBot for")));
+                reservation.creator.email == canceller.email &&
+                reservation.description.includes("Quick booking made from SlackBot for"));
         if (cancellerReservations.length == 0)
             return Promise.resolve(`${canceller.email} has not made any room reservations - Cannot cancel`);
 

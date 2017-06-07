@@ -95,20 +95,35 @@ const bot = () => {
     };
 
     const getFreeSlotDuration = () => {
-        // FIXME: Returns 'No free meeting rooms' when no reservations are found
         return calendar.getEvents().then(events => {
-            const eventsText = events.reduce((prev, e) => {
-                const diff = moment.duration(moment(e.start).diff(moment()));
-                const diffAsHours = diff.asHours();
-                if (diffAsHours > 0 && diffAsHours < 1) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
-                } else if (diffAsHours > 0) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
-                } else {
-                    return prev;
+            let eventsDiff = events.reduce((acc, e) => {
+                acc[e.name] = {hasEvents: true, diff: moment.duration(moment(e.start).diff(moment()))};
+                return acc;
+            }, {});
+            let c;
+            for (c of calendar.calendars) {
+                if(!(c.name in eventsDiff)) {
+                    eventsDiff[c.name] = {hasEvents: false, diff: moment()};
                 }
+            }
+
+            const eventsText = Object.entries(eventsDiff).reduce((prev, [key, value]) => {
+                if (!value.hasEvents) {
+                    return `${prev}${prev !== '' ? '\n' : ''}${key} - indefinitely`;
+                }
+
+                const diff = value.diff;
+                const diffAsHours = diff.asHours();
+                if (diffAsHours > 0 && diffAsHours < 2) {
+                    return `${prev}${prev !== '' ? '\n' : ''}${key} - ${diff.asMinutes().toFixed(0)} minutes`
+                }
+                if (diffAsHours > 0) {
+                    return `${prev}${prev !== '' ? '\n' : ''}${key} - ${diffAsHours.toFixed(1)} hours`
+                }
+                return prev;
             }, '');
-            return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for next:\n' + eventsText);
+
+            return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for:\n' + eventsText);
         }).catch(error => {
             notifyFunc('getFreeSlotDuration failed: ' + (error.stack || error));
             return 'Error with free meeting rooms';
@@ -166,7 +181,6 @@ const bot = () => {
             const msg = message.toLowerCase();
             // Allow arbitrary number of arguments
             // Only use the first one for determining the command
-            // e.g. `rooms foo bar` will be `rooms`
             const args = msg.split(" ");
             const command = args[0];
 

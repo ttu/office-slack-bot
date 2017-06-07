@@ -22,11 +22,11 @@ class CalendarService {
         });
     }
 
-    bookEvent(booker, meetingRoom, startTime, durationMinutes = 15) {
+    bookEvent(booker, meetingRoom, durationMinutes = 15) {
         return new Promise(async(resolve, reject) => {
             try {
                 const client = await this.getOAuthClient();
-                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, startTime, durationMinutes, client);
+                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, new Date(), durationMinutes, client);
                 resolve(bookingResult);
             } catch (err) {
                 reject(err);
@@ -121,16 +121,12 @@ class CalendarService {
         if (selected.length == 0)
             return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`)
 
-        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1000, auth);
+        const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
         if (!success)
             return Promise.resolve(`Failed to get calendar events`);
 
         const end = new Date(start.getTime() + durationMinutes * 60000);
-        // FIXME: Overlapping reservations aren't detected correctly
-        const overlappingReservations = upcomingReservations.filter(reservation =>
-                (end >= reservation.start && end < reservation.end) || (start <= reservation.end && start > reservation.start));
-
-        if (overlappingReservations.length > 0)
+        if((end >= nextReservation[0].start || end < nextReservation[0].end) && (start <= nextReservation[0].end || start > nextReservation[0].start))
             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format()}. Room is already reserved from ${moment(overlappingReservations[0].start).format('H:mm')} till ${moment(overlappingReservations[0].end).format('H:mm')}.`);
 
         const event = {
@@ -168,7 +164,7 @@ class CalendarService {
         if(selected.length == 0)
             return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`);
 
-        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1000, auth);
+        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 100, auth);
         if (!success)
             return Promise.resolve(`Failed to get calendar events`);
 

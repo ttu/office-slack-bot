@@ -118,47 +118,25 @@ const bot = () => {
     const bookMeetingRoom = (params, booker) => {
         const room = params[1];
 
-        const timeParams = params.slice(2);
         let duration = 15;
-        let start = moment();
-        let param;
-        for (param of timeParams) {
-            const lastThree = param.substr(param.length - 3);
+        if (params[2]) {
+            const lastThree = params[2].substr(params[2].length - 3);
+            let d = params[2];
             if(lastThree == "min") {
-                // Duration
-                const d = parseInt(param.slice(0, -3));
-                if(!Number.isInteger(d))
-                    return Promise.resolve(`Invalid duration`);
-                if (d > 120)
-                    return Promise.resolve(`Booking time can't be more than 60 minutes`);
-                if (d < 1)
-                    return Promise.resolve(`Booking time can't be less than 1 minute`);
-                duration = d;
-                continue;
+                d = parseInt(params[2].slice(0, -3));
+            } else {
+                d = parseInt(params[2]);
             }
-
-            if(param == "now") {
-                start = moment();
-                continue;
-            }
-
-            // moment is smart enough to replace ':'s with '.'s when necessary
-            let parsedTime = moment(param, ['H:m', 'HH:m', 'H:mm', 'HH:mm']);
-            if(parsedTime.isValid()) {
-                // Time
-                if(parsedTime.isBefore(start)) {
-                    return Promise.resolve(`Cannot book a meeting in the past`);
-                }
-                start.set({'hour': parsedTime.hour(), 'minute': parsedTime.minute(), 'second': parsedTime.second()});
-                continue;
-            }
-
-            return Promise.resolve(`Could not infer the meaning of parameter: ${param}`);
+            if(!Number.isInteger(d))
+                return Promise.resolve(`Invalid duration`);
+            if (d > 60)
+                return Promise.resolve(`Booking time can't be more than 60 minutes`);
+            if (d < 1)
+                return Promise.resolve(`Booking time can't be less than 1 minute`);
+            duration = d;
         }
-        if(!start.isValid())
-            return Promise.resolve(`Invalid start date`);
 
-        return calendar.bookEvent(booker, room, start.toDate(), duration).then(result => {
+        return calendar.bookEvent(booker, room, duration).then(result => {
             return result;
         }).catch(error => {
             notifyFunc(`bookMeetingRoom failed: ${params} ` + (error.message || error));
@@ -213,30 +191,15 @@ Options:
   temp       Get the office temperature
   free       List free meeting rooms
   rooms      List upcoming meeting room reservations
-  book       Book a meeting room (see `help verbose` for more)
-  cancel     Cancel a meeting (see `help verbose` for more)
+  book       Book a meeting room (see \`help verbose\` for more)
+  cancel     Cancel a meeting (see \`help verbose\` for more)
   lunch      Suggest a lunch place
   help       View this message`
 
                 const verbose = `Booking a room:
-  book <room> [arguments...]
-  Arguments can be:
-    - Duration:
-      - Default: 15 min
-      - Format: __min
-      - Has to be more than 1 minute and less than 120 minutes
-    - Start time:
-      - Default: now
-      - Format: hh:mm, hh.mm or 'now'
-      - Can't be in the past
-  Examples:
-    # Book room xxx for 15 minutes starting now
-    book xxx
-    # Book the same room for 15 minutes starting 13:00
-    book xxx 13:00
-    # Book for 20 minutes at noon
-    book xxx 20min 12:00
-    # Note the free order of arguments!
+  book <room> [duration]
+  Duration defaults to 15 minutes and has to be more than 1 and less that 60 minutes.
+  Duration can have a 'min'-suffix to better disambiguate its meaning for users.
 
 Cancelling a reservation:
   cancel <room>

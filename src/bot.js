@@ -189,7 +189,8 @@ const bot = () => {
             // Allow arbitrary number of arguments
             // Only use the first one for determining the command
             // e.g. `rooms foo bar` will be `rooms`
-            const command = msg.split(" ")[0];
+            const args = msg.split(" ");
+            const command = args[0];
 
             if (anyone.some(e => e === command)) {
                 return hasPeople();
@@ -202,24 +203,22 @@ const bot = () => {
             } else if (reservations.some(e => e === command)) {
                 return getCurrentEvents();
             } else if (book.some(e => e === command)) {
-                return bookMeetingRoom(msg.split(" "), caller);
+                return bookMeetingRoom(args, caller);
             } else if (cancel.some(e => e === command)) {
-                return cancelMeetingRoom(msg.split(" "), caller);
-            } else if (msg === 'help') {
-                // Pro documentation
+                return cancelMeetingRoom(args, caller);
+            } else if (command === 'help') {
                 const help = `SlackBot usage:
 Options:
-  anyone, any, people      Is there anyone in the office
-  temp, temperature        Get the office temperature
-  free, vapaa              List free meeting rooms
-  rooms, reservations
-      current, neukkarit   List upcoming meeting room reservations
-  book                     Book a meeting room (more below)
-  cancel                   Cancel a meeting (more below)
-  lunch, lounas            Suggest a lunch place
-  help                     View this message
+  anyone     Is there anyone in the office
+  temp       Get the office temperature
+  free       List free meeting rooms
+  rooms      List upcoming meeting room reservations
+  book       Book a meeting room (see `help verbose` for more)
+  cancel     Cancel a meeting (see `help verbose` for more)
+  lunch      Suggest a lunch place
+  help       View this message`
 
-Booking a room:
+                const verbose = `Booking a room:
   book <room> [arguments...]
   Arguments can be:
     - Duration:
@@ -244,6 +243,8 @@ Cancelling a reservation:
   This command will cancel the first meeting that meets the following criteria:
     - The reservation was placed by SlackBot
     - The canceller is the same person that booked the room`
+                if(args[1] && args[1] == 'verbose')
+                    return Promise.resolve(outputFormat(help + "\n\n" + verbose));
                 return Promise.resolve(outputFormat(help));
             }
 

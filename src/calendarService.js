@@ -124,7 +124,7 @@ class CalendarService {
 
         const start = new Date();
         const end = new Date(start.getTime() + durationMinutes * 60000);
-        if(nextReservation[0] && new Date(nextReservation[0].end) >= start)
+        if(nextReservation[0] && new Date(nextReservation[0].end) <= start)
             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format('H:mm')}. \
 Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')} till ${moment(nextReservation[0].end).format('H:mm')}.`);
 

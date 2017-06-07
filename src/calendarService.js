@@ -93,9 +93,12 @@ class CalendarService {
 
                 const events = response.items.map(e => {
                     return {
+                        // Event id
                         id: e.id,
                         name: calendarName,
+                        // Event start time (DateTime)
                         start: e.start.dateTime || e.start.date,
+                        // Event end time (DateTime)
                         end: e.end.dateTime || e.end.date,
                         summary: e.summary,
                         description: e.description,
@@ -123,11 +126,12 @@ class CalendarService {
             return Promise.resolve(`Failed to get calendar events`);
 
         const end = new Date(start.getTime() + durationMinutes * 60000);
+        // FIXME: Overlapping reservations aren't detected correctly
         const overlappingReservations = upcomingReservations.filter(reservation =>
                 (end >= reservation.start && end < reservation.end) || (start <= reservation.end && start > reservation.start));
 
         if (overlappingReservations.length > 0)
-            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format()}. Room is already reserved from ${moment(overlappingReservations[0].start).format()} till ${moment(overlappingReservations[0].end).format()}.`);
+            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format()}. Room is already reserved from ${moment(overlappingReservations[0].start).format('H:mm')} till ${moment(overlappingReservations[0].end).format('H:mm')}.`);
 
         const event = {
             'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
@@ -152,7 +156,7 @@ class CalendarService {
                 if (err) {
                     reject(`The API (calendar.events.insert) returned an error: ${err}\ncalendarId: ${selected[0].id}\nresource: ${JSON.stringify(event, null, 4)}`);
                 }
-                resolve(`${selected[0].name} booked for ${durationMinutes} minutes at ${moment(start).format()}`);
+                resolve(`${selected[0].name} booked for ${durationMinutes} minutes at ${moment(start).format('H:mm')}`);
             });
         });
     }

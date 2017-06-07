@@ -19,11 +19,11 @@ const calendar = new CalendarService(Config.meetingRooms);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
-    const anyone = ['anyone'];
-    const temp = ['temp'];
-    const lunch = ['lunch'];
-    const free = ['free'];
-    const reservations = ['rooms'];
+    const anyone = ['people', 'anyone', 'any'];
+    const temp = ['temp', 'temperature'];
+    const lunch = ['lunch', 'lounas'];
+    const free = ['free', 'vapaa'];
+    const reservations = ['rooms', 'reservations', 'current', 'neukkarit'];
     const book = ['book'];
     const cancel = ['cancel']; // Cancel reservation
 
@@ -73,7 +73,7 @@ const bot = () => {
 
     const getLunchPlace = () => {
         return restaurants.getRestaurant().then(response => {
-            return `How about ${response}`;
+            return `How about ${response}?`;
         }).catch(error => {
             notifyFunc('getLunchPlace failed: ' + (error.stack || error));
             return 'Error while fetching lunch places';
@@ -81,12 +81,12 @@ const bot = () => {
     };
 
     const getCurrentEvents = () => {
-        return calendar.getEvents(5).then(events => {
+        return calendar.getEvents(2).then(events => {
             const eventsText = events.reduce((prev, e) => {
                 const start = moment(e.start).format('DD.MM. HH:mm');
                 const end = moment(e.end).format('HH:mm');
                 return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
-            }, 'Next 5 reservations:');
+            }, 'Next 2 reservations:');
             return outputFormat(eventsText);
         }).catch(error => {
             notifyFunc('getCurrentEvents failed: ' + (error.stack || error));
@@ -95,6 +95,7 @@ const bot = () => {
     };
 
     const getFreeSlotDuration = () => {
+        // FIXME: Returns 'No free meeting rooms' when no reservations are found
         return calendar.getEvents().then(events => {
             const eventsText = events.reduce((prev, e) => {
                 const diff = moment.duration(moment(e.start).diff(moment()));
@@ -128,7 +129,7 @@ const bot = () => {
                 const d = parseInt(param.slice(0, -3));
                 if(!Number.isInteger(d))
                     return Promise.resolve(`Invalid duration`);
-                if (d > 60)
+                if (d > 120)
                     return Promise.resolve(`Booking time can't be more than 60 minutes`);
                 if (d < 1)
                     return Promise.resolve(`Booking time can't be less than 1 minute`);
@@ -141,6 +142,7 @@ const bot = () => {
                 continue;
             }
 
+            // moment is smart enough to replace ':'s with '.'s when necessary
             let parsedTime = moment(param, ['H:m', 'HH:m', 'H:mm', 'HH:mm']);
             if(parsedTime.isValid()) {
                 // Time
@@ -151,22 +153,10 @@ const bot = () => {
                 continue;
             }
 
-            let parsedDate = new Date(param);
-            if(parsedDate === parsedDate) {
-                // Not NaN
-                // Date
-                let date = moment(parsedDate);
-                if(date.isBefore(start)) {
-                    return Promise.resolve(`Cannot book a meeting in the past`);
-                }
-                start.set({'year': date.year(), 'month': date.month(), 'date': date.date()});
-                continue;
-            }
-
             return Promise.resolve(`Could not infer the meaning of parameter: ${param}`);
         }
         if(!start.isValid())
-            return Promise.resolve(`Invalid date`);
+            return Promise.resolve(`Invalid start date`);
 
         return calendar.bookEvent(booker, room, start.toDate(), duration).then(result => {
             return result;
@@ -196,6 +186,9 @@ const bot = () => {
         },
         handle(message, caller) {
             const msg = message.toLowerCase();
+            // Allow arbitrary number of arguments
+            // Only use the first one for determining the command
+            // e.g. `rooms foo bar` will be `rooms`
             const command = msg.split(" ")[0];
 
             if (anyone.some(e => e === command)) {
@@ -213,16 +206,18 @@ const bot = () => {
             } else if (cancel.some(e => e === command)) {
                 return cancelMeetingRoom(msg.split(" "), caller);
             } else if (msg === 'help') {
+                // Pro documentation
                 const help = `SlackBot usage:
 Options:
-  anyone        Is there anyone in the office
-  temp          Get the office temperature
-  free          List free meeting rooms
-  rooms         List upcoming meeting room reservations
-  book          Book a meeting room (more below)
-  cancel        Cancel a meeting (more below)
-  lunch         Suggest a lunch place
-  help          View this message
+  anyone, any, people      Is there anyone in the office
+  temp, temperature        Get the office temperature
+  free, vapaa              List free meeting rooms
+  rooms, reservations
+      current, neukkarit   List upcoming meeting room reservations
+  book                     Book a meeting room (more below)
+  cancel                   Cancel a meeting (more below)
+  lunch, lounas            Suggest a lunch place
+  help                     View this message
 
 Booking a room:
   book <room> [arguments...]
@@ -235,17 +230,13 @@ Booking a room:
       - Default: now
       - Format: hh:mm, hh.mm or 'now'
       - Can't be in the past
-    - Start date:
-      - Default: today
-      - Format: ISO 8601, RFC 2822 Date time or JavaScript Date.parse compatible
-      - Can't be in the past
   Examples:
     # Book room xxx for 15 minutes starting now
     book xxx
     # Book the same room for 15 minutes starting 13:00
     book xxx 13:00
-    # Book for 25 minutes in the UNIX end of time
-    book xxx 2038-01-19 25min 03:14
+    # Book for 20 minutes at noon
+    book xxx 20min 12:00
     # Note the free order of arguments!
 
 Cancelling a reservation:

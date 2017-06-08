@@ -179,8 +179,6 @@ const bot = () => {
         },
         handle(message, caller) {
             const msg = message.toLowerCase();
-            // Allow arbitrary number of arguments
-            // Only use the first one for determining the command
             const args = msg.split(" ");
             const command = args[0];
 

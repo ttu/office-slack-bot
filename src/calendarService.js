@@ -168,7 +168,7 @@ Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')}
             return Promise.resolve(`Failed to get calendar events`);
 
         const cancellerReservations = upcomingReservations.filter(reservation =>
-                reservation.creator.email == canceller.email &&
+                reservation.attendees.some(a => a.email == canceller.email) &&
                 reservation.description.includes("Quick booking made from SlackBot for"));
         if (cancellerReservations.length == 0)
             return Promise.resolve(`${canceller.email} has not made any room reservations - Cannot cancel`);
@@ -181,7 +181,7 @@ Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')}
             }, (err, response) => {
                 if (err)
                     reject('The API (calendar.events.delete) returned an error: ' + err);
-                resolve(`Reservation of ${selected[0].name} at ${cancellerReservations[0].start.dateTime} by ${canceller.email} has been cancelled`);
+                resolve(`Reservation of ${selected[0].name} at ${moment(cancellerReservations[0].start).format('H:mm')} by ${canceller.email} has been cancelled`);
             });
         });
     }

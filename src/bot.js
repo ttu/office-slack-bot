@@ -96,33 +96,22 @@ const bot = () => {
 
     const getFreeSlotDuration = () => {
         return calendar.getEvents().then(events => {
-            let eventsDiff = events.reduce((acc, e) => {
-                acc[e.name] = {hasEvents: true, diff: moment.duration(moment(e.start).diff(moment()))};
-                return acc;
-            }, {});
-            let c;
-            for (c of calendar.calendars) {
-                if(!(c.name in eventsDiff)) {
-                    eventsDiff[c.name] = {hasEvents: false, diff: moment()};
-                }
-            }
+            const eventsText = Config.meetingRooms.reduce((prev, c) => {
+                const e = events.find(e => e.name == c.name);
 
-            const eventsText = Object.entries(eventsDiff).reduce((prev, [key, value]) => {
-                if (!value.hasEvents) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${key} - indefinitely`;
-                }
+                if (!e)
+                 return `${prev}${prev !== '' ? '\n' : ''}${key} - indefinitely`;
 
-                const diff = value.diff;
+                const diff = moment.duration(moment(e.start).diff(moment()));
                 const diffAsHours = diff.asHours();
-                if (diffAsHours > 0 && diffAsHours < 2) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${key} - ${diff.asMinutes().toFixed(0)} minutes`
+                if (diffAsHours > 0 && diffAsHours < 1) {
+                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
+                } else if (diffAsHours > 0) {
+                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
+                } else {
+                    return prev;
                 }
-                if (diffAsHours > 0) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${key} - ${diffAsHours.toFixed(1)} hours`
-                }
-                return prev;
             }, '');
-
             return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for:\n' + eventsText);
         }).catch(error => {
             notifyFunc('getFreeSlotDuration failed: ' + (error.stack || error));
@@ -132,16 +121,12 @@ const bot = () => {
 
     const bookMeetingRoom = (params, booker) => {
         const room = params[1];
-
         let duration = 15;
+
         if (params[2]) {
             const lastThree = params[2].substr(params[2].length - 3);
-            let d = params[2];
-            if(lastThree == "min") {
-                d = parseInt(params[2].slice(0, -3));
-            } else {
-                d = parseInt(params[2]);
-            }
+            const d = lastThree == "min" ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
+
             if(!Number.isInteger(d))
                 return Promise.resolve(`Invalid duration`);
             if (d > 60)
@@ -197,8 +182,7 @@ const bot = () => {
             } else if (cancel.some(e => e === command)) {
                 return cancelMeetingRoom(args, caller);
             } else if (command === 'help') {
-                const help = `SlackBot usage:
-Options:
+                const help = `Options:
   anyone     Is there anyone in the office
   temp       Get the office temperature
   free       List free meeting rooms

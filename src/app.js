@@ -37,23 +37,36 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
     });
 });
 
-controller.hears(['lounas', 'ruoka'], 'ambient', (bot, message) => {
+const hearify = str => {
+    return "\b(.*?)" + str + "(.*?)\b";
+}
+let lunchSuggestTimer = moment().subtract(5, 'minutes');
+controller.hears([hearify('lounas'), hearify('ruoka'), hearify('syö(d|m)ään')], 'ambient', (bot, message) => {
+    if(!Config.autoLunchSuggest) {
+        return;
+    }
     if(moment().hour() <= 10 || moment().hour() > 13) {
         return;
     }
     if(!response.text || !response.user) {
         return;
     }
-    if(Config.allowGuestsToUse || (!response.user.is_restricted && !response.user.is_ultra_restricted)) {
-        const caller = { name: response.user.real_name, email: response.user.profile.email };
-        myBot.handle('lunch', caller).then(response => {
-            if(response) {
-                bot.reply(message, response);
-            }
-        });
-    } else {
-        bot.reply(message, "I won't listen to you!");
+    if(moment().diff(lunchSuggestTimer, 'minutes', true) < 5) {
+        return;
     }
+    lunchSuggestTimer = moment();
+    bot.api.users.info({ user: message.user }, (error, response) => {
+        if(Config.allowGuestsToUse || (!response.user.is_restricted && !response.user.is_ultra_restricted)) {
+            const caller = { name: response.user.real_name, email: response.user.profile.email };
+            myBot.handle('lunch', caller).then(response => {
+                if(response) {
+                    bot.reply(message, response);
+                }
+            });
+        } else {
+            bot.reply(message, "I won't listen to you!");
+        }
+    });
 });
 
 controller.on('rtm_close', () => {

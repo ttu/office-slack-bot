@@ -10,15 +10,16 @@ Slack bot for office use.
  * List free meeting rooms
  * List next meeting room reservations
  * Book a meeting room
+ * Cancel a booking made with the SlackBot
  * Suggest a lunch place
 
-Bot sends reply to the channel or to private chat where command was sent from.
+Bot sends a reply to the channel or to private chat where the command was sent from.
 
 Sends exceptions and errors to the user defined in the configuration file (`slackAdminUserId`).
 
 #### Anyone at the office
 
-Returns Office has people or Office is empty, depending if there is currently people at the office.
+Returns _Office has people_ or _Office is empty_ message, depending if there is currently people at the office.
 
 `GET /api/haspeople/{id}` from [Sensordata API](https://github.com/ttu/sensordata-node-restapi) for all sensors in the configuration file. If any of the requests return true, then there is someone at the office.
 
@@ -35,7 +36,7 @@ Returns lates sensors data for all sensors defined in the configuration file.
 
 #### Free meeting rooms, current events & book a room
 
-Free meeting rooms lists rooms that are free and duration how long they are available. Current events lists next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available.
+Free meeting rooms shows a list of rooms that are free and duration how long they are available. Current events shows a list of next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available. Bookings made with the SlackBot can also be cancelled by the same user.
 
 Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/). Meeting room calendars are defined in the configuration file. Booker info from [Slack User Info](https://api.slack.com/methods/users.info).
 
@@ -53,7 +54,7 @@ Requirements:
 
 ### ConsoleApp for testing
 
-Console app wraps same functionality as BotKit, so it works with same commands and returns same responsens.
+Console app wraps the same functionality as BotKit, so it works with same commands and returns same responsens.
 
 ```sh
 $ npm run console

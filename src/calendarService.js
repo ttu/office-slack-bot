@@ -113,18 +113,19 @@ class CalendarService {
         if (!roomName)
             return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
 
-        var selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+        const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
 
         if (selected.length == 0)
             return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`)
 
         const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
+
         if (!success)
             return Promise.resolve(`Failed to get calendar events`);
 
         const start = new Date();
         const end = new Date(start.getTime() + durationMinutes * 60000);
-        if(nextReservation[0] && new Date(nextReservation[0].end) <= start)
+        if (nextReservation[0] && new Date(nextReservation[0].end) <= start)
             return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format('H:mm')}. \
 Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')} till ${moment(nextReservation[0].end).format('H:mm')}.`);
 
@@ -157,10 +158,12 @@ Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')}
     }
 
     async cancelMeeting(canceller, roomName, auth) {
-        if(!roomName)
+        if (!roomName)
             return Promise.resolve(`Define room name. (${this.calendars.map(c => c.name)})`)
-        var selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
-        if(selected.length == 0)
+
+        const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+
+        if (selected.length == 0)
             return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`);
 
         const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
@@ -168,8 +171,9 @@ Room is already reserved from ${moment(nextReservation[0].start).format('H:mm')}
             return Promise.resolve(`Failed to get calendar events`);
 
         const cancellerReservations = upcomingReservations.filter(reservation =>
-                reservation.attendees.some(a => a.email == canceller.email) &&
-                reservation.description.includes("Quick booking made from SlackBot for"));
+            reservation.attendees.some(a => a.email == canceller.email) &&
+            reservation.description.includes("Quick booking made from SlackBot for"));
+
         if (cancellerReservations.length == 0)
             return Promise.resolve(`${canceller.email} has not made any room reservations - Cannot cancel`);
 

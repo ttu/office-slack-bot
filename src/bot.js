@@ -25,7 +25,7 @@ const bot = () => {
     const free = ['free', 'vapaa'];
     const reservations = ['rooms', 'reservations', 'current', 'neukkarit'];
     const book = ['book'];
-    const cancel = ['cancel']; // Cancel reservation
+    const cancel = ['cancel'];
 
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -55,7 +55,7 @@ const bot = () => {
                     resolve(sensorData);
                 }).catch(errorMessag => {
                     notifyFunc('temperature failed: ' + errorMessag)
-                    // Because Promise.all will fail fast, on error return null
+                    // Because Promise.all will fail fast, on error resolve null instead of reject
                     resolve(null);
                 });
             });
@@ -82,10 +82,10 @@ const bot = () => {
 
     const getCurrentEvents = () => {
         return calendar.getEvents(2).then(events => {
-            const eventsText = events.reduce((prev, e) => {
-                const start = moment(e.start).format('DD.MM. HH:mm');
-                const end = moment(e.end).format('HH:mm');
-                return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${start} to ${end} - ${e.summary}`
+            const eventsText = events.reduce((acc, cur) => {
+                const start = moment(cur.start).format('DD.MM. HH:mm');
+                const end = moment(cur.end).format('HH:mm');
+                return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - ${start} to ${end} - ${cur.summary}`
             }, 'Next 2 reservations:');
             return outputFormat(eventsText);
         }).catch(error => {
@@ -96,20 +96,20 @@ const bot = () => {
 
     const getFreeSlotDuration = () => {
         return calendar.getEvents().then(events => {
-            const eventsText = Config.meetingRooms.reduce((prev, c) => {
-                const e = events.find(e => e.name == c.name);
+            const eventsText = Config.meetingRooms.reduce((acc, cur) => {
+                const e = events.find(e => e.name == cur.name);
 
                 if (!e)
-                 return `${prev}${prev !== '' ? '\n' : ''}${key} - indefinitely`;
+                    return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - indefinitely`;
 
                 const diff = moment.duration(moment(e.start).diff(moment()));
                 const diffAsHours = diff.asHours();
                 if (diffAsHours > 0 && diffAsHours < 1) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
+                    return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
                 } else if (diffAsHours > 0) {
-                    return `${prev}${prev !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
+                    return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
                 } else {
-                    return prev;
+                    return acc;
                 }
             }, '');
             return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for:\n' + eventsText);
@@ -127,7 +127,7 @@ const bot = () => {
             const lastThree = params[2].substr(params[2].length - 3);
             const d = lastThree == "min" ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
 
-            if(!Number.isInteger(d))
+            if (!Number.isInteger(d))
                 return Promise.resolve(`Invalid duration`);
             if (d > 60)
                 return Promise.resolve(`Booking time can't be more than 60 minutes`);
@@ -182,6 +182,7 @@ const bot = () => {
             } else if (cancel.some(e => e === command)) {
                 return cancelMeetingRoom(args, caller);
             } else if (command === 'help') {
+
                 const help = `Options:
   anyone     Is there anyone in the office
   temp       Get the office temperature
@@ -202,9 +203,9 @@ Cancelling a reservation:
   This command will cancel the first meeting that meets the following criteria:
     - The reservation was placed by SlackBot
     - The canceller is the same person that booked the room`
-                if(args[1] && args[1] == 'verbose')
-                    return Promise.resolve(outputFormat(help + "\n\n" + verbose));
-                return Promise.resolve(outputFormat(help));
+
+                const output = args[1] && args[1] == 'verbose' ? help + "\n\n" + verbose : help;
+                return Promise.resolve(outputFormat(output));
             }
 
             return Promise.resolve("I didn't understand. See _help_ for usage instructions.");

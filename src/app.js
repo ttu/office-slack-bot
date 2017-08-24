@@ -5,7 +5,6 @@ const Config = require('./configuration');
 
 // If constants not found from environment variables, try to get it from keys.js file
 const BOT_TOKEN = process.env.BOT_TOKEN || Config.botToken;
-const HOME_CHANNEL_ID = process.env.CHANNEL_ID || Config.homeChannelId;
 
 const myBot = require('./bot');
 

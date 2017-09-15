@@ -20,7 +20,7 @@ class RestaurantService {
                 .end((err, res) => {
                     if (err || !res.ok) cb([false, 'Failed']);
 
-                    // Maybe too frequent requests to api make requet to fail?
+                    // Maybe too frequent requests to the API makes the request to fail?
                     if (res.body.status === "INVALID_REQUEST") {
                         if (tryCount > 5) cb([true, datas]); // Return what we have so far
                         setTimeout(() => getData(datas, url, cb, tryCount++), 2000);

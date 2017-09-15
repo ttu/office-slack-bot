@@ -3,7 +3,7 @@
 const Botkit = require('botkit');
 const Config = require('./configuration');
 
-// If constants not found from environment variables, try to get it from keys.js file
+// If constants not found from environment variables, try to get it from configuration.js file
 const BOT_TOKEN = process.env.BOT_TOKEN || Config.botToken;
 
 const myBot = require('./bot');
@@ -26,7 +26,7 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
             const caller = { name: response.user.real_name, email: response.user.profile.email };
             myBot.handle(message.text, caller).then(response => {
                 if (!response) return;
-                
+
                 // If response has a channel defined, then reply to that channel
                 if (response.channel)
                     bot.say({ text: response.text, channel: response.channel });

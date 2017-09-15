@@ -127,7 +127,7 @@ const bot = () => {
 
         if (params[2]) {
             const lastThree = params[2].substr(params[2].length - 3);
-            const d = lastThree == "min" ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
+            const d = lastThree == 'min' ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
 
             if (!Number.isInteger(d))
                 return Promise.resolve(`Invalid duration`);
@@ -169,8 +169,9 @@ const bot = () => {
         setNotifyFunc(func) {
             notifyFunc = func;
         },
+        // hande will return a Promise<string> or a Promise<{text:string, channel:string}>
         handle(message, caller) {
-            const args = message.toLowerCase().split(" ");
+            const args = message.toLowerCase().split(' ');
             const command = args[0];
 
             if (anyone.some(e => e === command)) {
@@ -191,7 +192,8 @@ const bot = () => {
                 return postAnonymous(message);
             } else if (command === 'help') {
 
-                const help = `Options:
+                const help = `
+Options:
   say        Say something anonymously
   anyone     Is there anyone in the office
   temp       Get the office temperature
@@ -200,9 +202,10 @@ const bot = () => {
   book       Book a meeting room (see \`help verbose\` for more)
   cancel     Cancel a meeting (see \`help verbose\` for more)
   lunch      Suggest a lunch place
-  help       View this message`
+  help       View this message`;
 
-                const verbose = `Booking a room:
+                const verbose = `
+Booking a room:
   book <room> [duration]
   Duration defaults to 15 minutes and has to be more than 1 and less that 60 minutes.
   Duration can have a 'min'-suffix to better disambiguate its meaning for users.
@@ -211,13 +214,13 @@ Cancelling a reservation:
   cancel <room>
   This command will cancel the first meeting that meets the following criteria:
     - The reservation was placed by SlackBot
-    - The canceller is the same person that booked the room`
+    - The canceller is the same person that booked the room`;
 
-                const output = args[1] && args[1] == 'verbose' ? help + "\n\n" + verbose : help;
+                const output = args[1] && args[1] == 'verbose' ? help + '\n\n' + verbose : help;
                 return Promise.resolve(outputFormat(output));
             }
 
-            return Promise.resolve("I didn't understand. See _help_ for usage instructions.");
+            return Promise.resolve(`I didn't understand. See _help_ for usage instructions.`);
         }
     }
 }

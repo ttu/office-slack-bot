@@ -25,6 +25,8 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
         if (Config.allowGuestsToUse || (!response.user.is_restricted && !response.user.is_ultra_restricted)) {
             const caller = { name: response.user.real_name, email: response.user.profile.email };
             myBot.handle(message.text, caller).then(response => {
+                if (!response) return;
+                
                 // If response has a channel defined, then reply to that channel
                 if (response.channel)
                     bot.say({ text: response.text, channel: response.channel });

@@ -5,6 +5,7 @@ Slack bot for office use.
 
 ## Functionality
 
+ * Send a message anonymously
  * Is there anyone at the office
  * Office temperature
  * List free meeting rooms
@@ -13,7 +14,7 @@ Slack bot for office use.
  * Cancel a booking made with the SlackBot
  * Suggest a lunch place
 
-Bot sends a reply to the channel or to private chat where the command was sent from.
+Bot sends a reply to the channel or to private chat where the command was sent from. Anonyous messages are sent to the defined home channel.
 
 Sends exceptions and errors to the user defined in the configuration file (`slackAdminUserId`).
 

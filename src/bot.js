@@ -12,6 +12,7 @@ const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
 const API_URL = process.env.API_URL || Config.apiUrl;
 const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Config.locationApiKey;
+const HOME_CHANNEL = Config.homeChannelId;
 
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
@@ -26,7 +27,8 @@ const bot = () => {
     const reservations = ['rooms', 'reservations', 'current', 'neukkarit'];
     const book = ['book'];
     const cancel = ['cancel'];
-
+    const say = ['say'];
+    
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
 
@@ -155,6 +157,11 @@ const bot = () => {
         });
     }
 
+    const postAnonymous = (message) => {
+        const toSend = message.substr(message.indexOf(' ') + 1);
+        return Promise.resolve({ text: `Anonymous: ${toSend}`, channel: HOME_CHANNEL });
+    }
+
     // default empty notify function
     let notifyFunc = (output) => {};
 
@@ -163,8 +170,7 @@ const bot = () => {
             notifyFunc = func;
         },
         handle(message, caller) {
-            const msg = message.toLowerCase();
-            const args = msg.split(" ");
+            const args = message.toLowerCase().split(" ");
             const command = args[0];
 
             if (anyone.some(e => e === command)) {
@@ -181,9 +187,12 @@ const bot = () => {
                 return bookMeetingRoom(args, caller);
             } else if (cancel.some(e => e === command)) {
                 return cancelMeetingRoom(args, caller);
+            } else if (say.some(e => e === command)) {
+                return postAnonymous(message);
             } else if (command === 'help') {
 
                 const help = `Options:
+  say        Say something anonymously
   anyone     Is there anyone in the office
   temp       Get the office temperature
   free       List free meeting rooms

@@ -14,9 +14,15 @@ Slack bot for office use.
  * Cancel a booking made with the SlackBot
  * Suggest a lunch place
 
-Bot sends a reply to the channel or to private chat where the command was sent from. Anonyous messages are sent to the defined home channel.
+Bot sends a reply to the channel or to private chat where the command was sent from.
 
 Sends exceptions and errors to the user defined in the configuration file (`slackAdminUserId`).
+
+#### Anonymous message
+
+Anonyous messages are sent to the home channel defined in the configuration file (`homeChannelId`)
+
+![Anonymous message](docs/anon.jpg "Anonymous message")
 
 #### Anyone at the office
 
@@ -39,6 +45,8 @@ Returns lates sensors data for all sensors defined in the configuration file.
 
 Free meeting rooms shows a list of rooms that are free and duration how long they are available. Current events shows a list of next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available. Bookings made with the SlackBot can also be cancelled by the same user.
 
+![Book a meeting room](docs/book.jpg "Book a meeting room")
+
 Uses [Google Calendar API](https://developers.google.com/google-apps/calendar/v3/reference/). Meeting room calendars are defined in the configuration file. Booker info from [Slack User Info](https://api.slack.com/methods/users.info).
 
 Requirements:
@@ -49,6 +57,8 @@ Requirements:
 #### Suggest a lunch place 
 
 Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list. Office location is defined in the configuration file. 
+
+![Suggest a lung place](docs/lunch.jpg "Suggest a lung place")
 
 Requirements:
 * [Get an API key](https://developers.google.com/places/web-service/get-api-key)

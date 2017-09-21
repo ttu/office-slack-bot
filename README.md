@@ -13,6 +13,7 @@ Slack bot for office use.
  * Book a meeting room
  * Cancel a booking made with the SlackBot
  * Suggest a lunch place
+ * Suggest a beer place
 
 Bot sends a reply to the channel or to private chat where the command was sent from.
 
@@ -54,9 +55,9 @@ Requirements:
 * Execute `npm run create_token` to store authentication token to json-file. This file is not in version control
 * Both files need to be in the workspace root
 
-#### Suggest a lunch place 
+#### Suggest a lunch or a beer place 
 
-Get list of restaurants from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m from the office and return random item from that list. Office location is defined in the configuration file. 
+Get list of restaurants/bars from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m/800m from the office and return random item from that list. Office location is defined in the configuration file. 
 
 ![Suggest a lung place](docs/lunch.jpg "Suggest a lung place")
 

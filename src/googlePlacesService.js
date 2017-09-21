@@ -2,11 +2,11 @@
 
 const request = require('superagent');
 
-class RestaurantService {
-    constructor(apiKey, office) {
+class GooglePlacesService {
+    constructor(apiKey, office, type, distance = 500) {
         this.key = apiKey;
         this.onlyOpen = false;
-        this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=500&type=restaurant${this.onlyOpen ? '&opennow=true' : ''}&key=${this.key}`;
+        this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=${distance}&type=${type}${this.onlyOpen ? '&opennow=true' : ''}&key=${this.key}`;
         this.lastUpdateTimeInMs = 0;
         this.refreshTimeMs = 5 * 60 * 10000;
         this.updatePromise = null;
@@ -61,7 +61,7 @@ class RestaurantService {
         return this.updatePromise;
     }
 
-    getRestaurant() {
+    getPlaces() {
         const isOld = Date.now() - this.lastUpdateTimeInMs > this.refreshTimeMs;
 
         if (isOld || this.updatePromise === null)
@@ -71,4 +71,4 @@ class RestaurantService {
     }
 }
 
-module.exports = RestaurantService;
+module.exports = GooglePlacesService;

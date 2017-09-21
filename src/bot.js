@@ -4,7 +4,7 @@ const moment = require('moment');
 moment.locale('fi');
 
 const SensorApi = require('./sensorApi');
-const RestaurantService = require('./restaurantService');
+const GooglePlacesService = require('./googlePlacesService');
 const CalendarService = require('./calendarService');
 const Config = require('./configuration');
 
@@ -15,7 +15,8 @@ const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Config.locationApiKey;
 const HOME_CHANNEL = Config.homeChannelId;
 
 const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
-const restaurants = new RestaurantService(LOCATION_API_KEY, Config.office);
+const restaurants = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'restaurant');
+const bars = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'bar', 800);
 const calendar = new CalendarService(Config.meetingRooms);
 
 // Bot returns object literal instead of class, so we can have private functions
@@ -23,6 +24,7 @@ const bot = () => {
     const anyone = ['people', 'anyone', 'any'];
     const temp = ['temp', 'temperature'];
     const lunch = ['lunch', 'lounas'];
+    const bar = ['bar', 'beer', 'kaljaa'];
     const free = ['free', 'vapaa'];
     const reservations = ['rooms', 'reservations', 'current', 'neukkarit'];
     const book = ['book'];
@@ -73,12 +75,12 @@ const bot = () => {
         });
     };
 
-    const getLunchPlace = () => {
-        return restaurants.getRestaurant().then(response => {
+    const getPlaces = (service) => {
+        return service.getPlaces().then(response => {
             return `How about ${response}?`;
         }).catch(error => {
-            notifyFunc('getLunchPlace failed: ' + (error.stack || error));
-            return 'Error while fetching lunch places';
+            notifyFunc('getPlaces failed: ' + (error.stack || error));
+            return 'Error while fetching places';
         });
     };
 
@@ -179,7 +181,9 @@ const bot = () => {
             } else if (temp.some(e => e === command)) {
                 return temperature();
             } else if (lunch.some(e => e === command)) {
-                return getLunchPlace();
+                return getPlaces(restaurants);
+            } else if (bar.some(e => e === command)) {
+                return getPlaces(bars);
             } else if (free.some(e => e === command)) {
                 return getFreeSlotDuration();
             } else if (reservations.some(e => e === command)) {
@@ -202,6 +206,7 @@ Options:
   book       Book a meeting room (see \`help verbose\` for more)
   cancel     Cancel a meeting (see \`help verbose\` for more)
   lunch      Suggest a lunch place
+  beer       Suggest a beer place
   help       View this message`;
 
                 const verbose = `

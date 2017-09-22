@@ -1,6 +1,6 @@
 {
-  "name": "sensorapi-slack-bot",
-  "version": "1.0.0",
+  "name": "office-slack-bot",
+  "version": "0.1.0",
   "description": "",
   "engines": {
     "node": ">=7.6.0"

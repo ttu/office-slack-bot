@@ -141,7 +141,7 @@ const bot = () => {
             if (!Number.isInteger(d))
                 return Promise.resolve(`Invalid duration`);
             if (d > 600)
-                return Promise.resolve(`Booking time can't be more than 10 hours`);
+                return Promise.resolve(`Booking time can't be more than 600 minutes`);
             if (d < 1)
                 return Promise.resolve(`Booking time can't be less than 1 minute`);
             duration = d;
@@ -240,8 +240,8 @@ Options:
 
                 const verbose = `
 Booking a room:
-  book <room> [duration]
-  Duration defaults to 15 minutes and has to be more than 1 and less that 60 minutes.
+  book <room> [duration (minutes)]
+  Duration defaults to 15 minutes and has to be more than 1 and less that 600 minutes.
   Duration can have a 'min'-suffix to better disambiguate its meaning for users.
 
 Cancelling a reservation:

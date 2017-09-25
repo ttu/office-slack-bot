@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node src/app.js",
     "test": "mocha -t 100000 test/*.test.js",
+    "test:g": "mocha -t 100000 -g",
     "console": "node src/consoleApp.js",
     "create_token": "node helpers/googleTokenCreator.js"
   },
@@ -20,6 +21,7 @@
     "google-auth-library": "^0.10.0",
     "googleapis": "^16.1.0",
     "moment": "^2.18.1",
+    "nodemailer": "^4.1.0",
     "superagent": "^3.1.0"
   },
   "devDependencies": {

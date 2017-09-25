@@ -27,9 +27,10 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
             myBot.handle(message.text, caller).then(response => {
                 if (!response) return;
 
-                // If response has a channel defined, then reply to that channel
                 if (response.channel)
                     bot.say({ text: response.text, channel: response.channel });
+                else if (response.confirm)
+                    handleConfirmConversation(bot, message.user, response);
                 else
                     bot.reply(message, response);
             });
@@ -38,6 +39,36 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
         }
     });
 });
+
+const handleConfirmConversation = (bot, user, confirmResponse) => {
+    bot.startPrivateConversation({ user: user }, (err, convo) => {
+        convo.ask(confirmResponse.text, [
+            {
+                pattern: 'yes',
+                callback: (response, convo) => {
+                    confirmResponse.action().then(result => {
+                        convo.say(result);
+                        convo.next();
+                    });
+                }
+            },
+            {
+                pattern: 'no',
+                callback: (response, convo) => {
+                    convo.say('Ok, rejected');
+                    convo.next();
+                }
+            },
+            {
+                default: true,
+                callback: (response, convo) => {
+                    convo.repeat();
+                    convo.next();
+                }
+            }
+        ]);
+    });
+};
 
 controller.on('rtm_close', () => {
     // Just exit. Forver or something similair will restart this

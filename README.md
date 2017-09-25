@@ -3,8 +3,6 @@ Slack Bot
 
 Slack bot for office use.
 
-## Functionality
-
  * Send a message anonymously
  * Is there anyone at the office
  * Office temperature
@@ -14,6 +12,18 @@ Slack bot for office use.
  * Cancel a booking made with the SlackBot
  * Suggest a lunch place
  * Suggest a beer place
+ * Send email to defined address
+
+## Get Started
+
+1) Create new configuration file (_src/configuration.js_)
+ * Copy template from configuration file [section](https://github.com/ttu/office-slack-bot#configuration-file)
+1) Create new App for Slack
+ * Add it to `botToken`
+1) Run bot e.g. with [forever](https://github.com/foreverjs/forever), supervisord etc.
+ * `$ forever start src/app.js`
+
+## Functionality
 
 Bot sends a reply to the channel or to private chat where the command was sent from.
 
@@ -59,12 +69,37 @@ Requirements:
 
 Get list of restaurants/bars from [Google Places API](https://developers.google.com/places/web-service/search) that are max 500m/800m from the office and return random item from that list. Office location is defined in the configuration file. 
 
-![Suggest a lung place](docs/lunch.jpg "Suggest a lung place")
+![Suggest a lunch place](docs/lunch.jpg "Suggest a lunch place")
 
 Requirements:
 * [Get an API key](https://developers.google.com/places/web-service/get-api-key)
 
-### ConsoleApp for testing
+#### Send email
+
+[Nodemailer](https://nodemailer.com/) is used to sen email. Add `mailConfig` to the configuration file. Will send email to defined email address and cc to sender. Add information to the configuration's `emailMessage`.
+
+Bot has an implementation to send an email to the maintenane company.
+
+Requirements:
+* If using google account, enable less secure apps https://myaccount.google.com/lesssecureapps
+
+## Files
+
+* src/app.js
+ * Slack Botkit related communication
+* src/consoleApp.js
+ * Console application for testig
+* src/bot.js
+ * Logic for executing correct functionality
+* src/configuration.js
+ * __Required__ configuration for the application. Not in version control.
+ * Google Calendar integration
+* src/emailSender.js
+ * Email sending functionality
+* src/googlePlacesService.js
+ * Google Places API integration
+
+## ConsoleApp for testing
 
 Console app wraps the same functionality as BotKit, so it works with same commands and returns same responsens.
 
@@ -72,7 +107,7 @@ Console app wraps the same functionality as BotKit, so it works with same comman
 $ npm run console
 ```
 
-### Configuration file
+## Configuration file
 
 configuration.js containts tokens, passwords, locations, sensors etc. Some of these can be given also as environment variables
 
@@ -98,14 +133,48 @@ module.exports = {
     ],
     meetingRooms: [
         { name: 'xxxx', id: 'xxxx'}
-    ]
+    ],
+    emailConfig: {
+        service: "gmail",
+        host: "smtp.gmail.com",
+        auth: {
+            user: "xxx@gmail.com",
+            pass: "xxxxx"
+        }
+    },
+    emailMessage: {
+        receiver: 'test@test.com',
+        subject: 'Maintenance request',
+        template: `
+Hi,
+
+{content}
+
+Br,
+{senderName}
+`
+    }
 };
 ```
 
-### Tests
+## Tests
 
-Test folder contains integration tests.
+Test folder contains tests. Some tests require correct Google API keys in the configuration file.
 
 ```sh
 $ npm test
 ```
+
+Run test matchin the pattern:
+
+```sh
+$ npm run test:g [pattern]
+```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+Licensed under the [MIT](LICENSE) License.

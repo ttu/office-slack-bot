@@ -7,6 +7,7 @@ const SensorApi = require('./sensorApi');
 const GooglePlacesService = require('./googlePlacesService');
 const CalendarService = require('./calendarService');
 const Config = require('./configuration');
+const EmailSender = require('./emailSender');
 
 const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
@@ -18,6 +19,11 @@ const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
 const restaurants = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'restaurant');
 const bars = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'bar', 800);
 const calendar = new CalendarService(Config.meetingRooms);
+const email = new EmailSender(
+                        Config.emailConfig, 
+                        Config.emailMessage.subject, 
+                        Config.emailMessage.template, 
+                        Config.emailMessage.receiver);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
@@ -30,6 +36,7 @@ const bot = () => {
     const book = ['book'];
     const cancel = ['cancel'];
     const say = ['say'];
+    const maintenance = ['maintenance', 'huolto'];
     
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -164,6 +171,18 @@ const bot = () => {
         return Promise.resolve({ text: `Anonymous: ${toSend}`, channel: HOME_CHANNEL });
     }
 
+    const sendMaintenanceEmail = (message, caller) => {
+        if (message.indexOf(' ') == -1)
+            return Promise.resolve(`Message is empty`);
+
+        const toSend = message.substr(message.indexOf(' ') + 1);
+        return Promise.resolve({ 
+            text: `Email to maintenance:\n${outputFormat(email.getContent(toSend, caller.name))}\nSend now? (yes/no)`, 
+            confirm: true, 
+            action: () => email.send(toSend, caller.email, caller.name) 
+        });
+    }
+
     // default empty notify function
     let notifyFunc = (output) => {};
 
@@ -171,7 +190,14 @@ const bot = () => {
         setNotifyFunc(func) {
             notifyFunc = func;
         },
-        // hande will return a Promise<string> or a Promise<{text:string, channel:string}>
+        /**
+         * @param   {string} message 
+         * @param   {{name: string, email: string}} caller
+         * @returns {Promise<string> | Promise<{text:string, channel:string }> | Promise<{text:string, confirm:bool, action: () => Promise<string> }>}
+         *          Promise containing a message
+         *          Promise containing a message and a reply channel id
+         *          Promise containing confirmation message and action to be executed. Action returns Promise containing a message
+         */
         handle(message, caller) {
             const args = message.toLowerCase().split(' ');
             const command = args[0];
@@ -194,6 +220,8 @@ const bot = () => {
                 return cancelMeetingRoom(args, caller);
             } else if (say.some(e => e === command)) {
                 return postAnonymous(message);
+            } else if (maintenance.some(e => e === command)) {
+                return sendMaintenanceEmail(message, caller);
             } else if (command === 'help') {
 
                 const help = `
@@ -203,11 +231,12 @@ Options:
   temp       Get the office temperature
   free       List free meeting rooms
   rooms      List upcoming meeting room reservations
-  book       Book a meeting room (see \`help verbose\` for more)
-  cancel     Cancel a meeting (see \`help verbose\` for more)
+  book       Book a meeting room
+  cancel     Cancel a meeting
   lunch      Suggest a lunch place
   beer       Suggest a beer place
-  help       View this message`;
+  huolto     Send email to the maintenance company
+  help       View this message (see \`help verbose\` for more)`;
 
                 const verbose = `
 Booking a room:
@@ -219,7 +248,12 @@ Cancelling a reservation:
   cancel <room>
   This command will cancel the first meeting that meets the following criteria:
     - The reservation was placed by SlackBot
-    - The canceller is the same person that booked the room`;
+    - The canceller is the same person that booked the room
+    
+Send email to the maintenace company:
+  huolto <message>
+  This command sends email to the mainetenance company. Slack user is added as a sender and
+  copy of the email is also sent to the sender. Bot will confirm the message before sending.`;
 
                 const output = args[1] && args[1] == 'verbose' ? help + '\n\n' + verbose : help;
                 return Promise.resolve(outputFormat(output));

@@ -140,8 +140,8 @@ const bot = () => {
 
             if (!Number.isInteger(d))
                 return Promise.resolve(`Invalid duration`);
-            if (d > 60)
-                return Promise.resolve(`Booking time can't be more than 60 minutes`);
+            if (d > 600)
+                return Promise.resolve(`Booking time can't be more than 10 hours`);
             if (d < 1)
                 return Promise.resolve(`Booking time can't be less than 1 minute`);
             duration = d;

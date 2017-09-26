@@ -12,16 +12,16 @@ Slack bot for office use.
  * Cancel a booking made with the SlackBot
  * Suggest a lunch place
  * Suggest a beer place
- * Send email to defined address
+ * Send an email to a predefined address
 
 ## Get Started
 
 1) Create new configuration file (_src/configuration.js_)
- * Copy template from configuration file [section](https://github.com/ttu/office-slack-bot#configuration-file)
-1) Create new App for Slack
- * Add it to `botToken`
+    * Copy template from configuration file [section](https://github.com/ttu/office-slack-bot#configuration-file)
+1) Create a new App for your Slack workspace
+    * Add App's token to configuration's `botToken`
 1) Run bot e.g. with [forever](https://github.com/foreverjs/forever), supervisord etc.
- * `$ forever start src/app.js`
+    * `$ forever start src/app.js`
 
 ## Functionality
 
@@ -78,26 +78,28 @@ Requirements:
 
 [Nodemailer](https://nodemailer.com/) is used to sen email. Add `mailConfig` to the configuration file. Will send email to defined email address and cc to sender. Add information to the configuration's `emailMessage`.
 
-Bot has an implementation to send an email to the maintenane company.
+Bot's source code has an implementation to send an email to the maintenane company.
 
 Requirements:
-* If using google account, enable less secure apps https://myaccount.google.com/lesssecureapps
+* If Google is used to send emails, enable less secure apps for the account https://myaccount.google.com/lesssecureapps
 
 ## Files
 
 * src/app.js
- * Slack Botkit related communication
+  * Slack Botkit related communication
 * src/consoleApp.js
- * Console application for testig
+  * Console application for testig
 * src/bot.js
- * Logic for executing correct functionality
+  * Logic for executing correct functionality
 * src/configuration.js
- * __Required__ configuration for the application. Not in version control.
- * Google Calendar integration
+  * __Required__ configuration for the application. Not in version control.
+  * Add this file manually
+* src/calendarServices.js
+  * Google Calendar integration
 * src/emailSender.js
- * Email sending functionality
+  * Email sending functionality
 * src/googlePlacesService.js
- * Google Places API integration
+  * Google Places API integration
 
 ## ConsoleApp for testing
 

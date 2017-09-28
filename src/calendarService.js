@@ -91,15 +91,17 @@ class CalendarService {
                     return;
                 }
 
+                const isPublic = (item) => item.visibility !== 'private';
+
                 const events = response.items.map(e => {
                     return {
                         id: e.id,
                         name: calendarName,
                         start: e.start.dateTime || e.start.date,
                         end: e.end.dateTime || e.end.date,
-                        summary: e.summary,
-                        description: e.description,
-                        attendees: e.attendees,
+                        summary: isPublic(e) ? e.summary : 'Private',
+                        description: isPublic(e) ? e.description : 'Private',
+                        attendees: isPublic(e) ? e.attendees : 'Private',
                         creator: e.creator
                     }
                 });

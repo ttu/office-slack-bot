@@ -54,7 +54,7 @@ Returns lates sensors data for all sensors defined in the configuration file.
 
 #### Free meeting rooms, current events & book a room
 
-Free meeting rooms shows a list of rooms that are free and duration how long they are available. Current events shows a list of next 2 events for each calendar defined in the configuration file. Book a room makes a reservation for the next X minutes if that time is available. Bookings made with the SlackBot can also be cancelled by the same user.
+Free meeting rooms shows a list of rooms that are free and duration how long they are available. Current events shows a list of next 2 events for each calendar defined in the configuration file. It will hide info from private events. Book a room makes a reservation for the next X minutes if that time is available. Bookings made with the SlackBot can also be cancelled by the same user.
 
 ![Book a meeting room](docs/book.jpg "Book a meeting room")
 

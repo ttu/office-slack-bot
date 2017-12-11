@@ -1,5 +1,6 @@
 'use strict';
 
+const fetch = require('node-fetch');
 const moment = require('moment');
 moment.locale('fi');
 
@@ -37,7 +38,8 @@ const bot = () => {
     const cancel = ['cancel'];
     const say = ['say'];
     const maintenance = ['maintenance', 'huolto'];
-    
+    const bitcoin = ['bitcoin'];
+
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
 
@@ -183,6 +185,12 @@ const bot = () => {
         });
     }
 
+    const bitcoinValue = async () => {
+        const result = await fetch(`https://api.coindesk.com/v1/bpi/currentprice.json`);
+        const json = await result.json();
+        return `Bitcoin: $${json.bpi.USD.rate}`;
+    }
+
     // default empty notify function
     let notifyFunc = (output) => {};
 
@@ -222,6 +230,8 @@ const bot = () => {
                 return postAnonymous(message);
             } else if (maintenance.some(e => e === command)) {
                 return sendMaintenanceEmail(message, caller);
+            } else if (bitcoin.some(e => e === command)) {
+                return bitcoinValue();
             } else if (command === 'help') {
 
                 const help = `
@@ -235,6 +245,7 @@ Options:
   cancel     Cancel a meeting
   lunch      Suggest a lunch place
   beer       Suggest a beer place
+  bitcoin    Show current bitcoin price
   huolto     Send email to the maintenance company
   help       View this message (see \`help verbose\` for more)`;
 

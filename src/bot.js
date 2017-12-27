@@ -9,6 +9,7 @@ const GooglePlacesService = require('./googlePlacesService');
 const CalendarService = require('./calendarService');
 const Config = require('./configuration');
 const EmailSender = require('./emailSender');
+const SlackChannelStats = require('./slackChannelStats');
 
 const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
@@ -25,6 +26,7 @@ const email = new EmailSender(
                         Config.emailMessage.subject, 
                         Config.emailMessage.template, 
                         Config.emailMessage.receiver);
+const slackStats = new SlackChannelStats(Config.botToken);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
@@ -39,6 +41,7 @@ const bot = () => {
     const say = ['say'];
     const maintenance = ['maintenance', 'huolto'];
     const bitcoin = ['bitcoin'];
+    const stats = ['stats'];
 
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -191,6 +194,20 @@ const bot = () => {
         return `Bitcoin: $${json.bpi.USD.rate}`;
     }
 
+    const channelStats = async (params, caller) => {
+        const days = params[1] || 7;
+        const top = params[2] || 5;
+        
+        const activity = await slackStats.getActivity(caller.channel, days, top);
+
+        if (!activity)
+            return Promise.resolve('Could not get channel history data');
+
+        const topList = activity.top.reduce((text, item) => `${text}  ${item.name} - ${item.count} (${item.percentage}%)\n`, '');
+        const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\nTop Users:\n${topList}`;
+        return outputFormat(text);
+    }
+
     // default empty notify function
     let notifyFunc = (output) => {};
 
@@ -232,6 +249,8 @@ const bot = () => {
                 return sendMaintenanceEmail(message, caller);
             } else if (bitcoin.some(e => e === command)) {
                 return bitcoinValue();
+            } else if (stats.some(e => e === command)) {
+                return channelStats(args, caller);
             } else if (command === 'help') {
 
                 const help = `
@@ -246,6 +265,7 @@ Options:
   lunch      Suggest a lunch place
   beer       Suggest a beer place
   bitcoin    Show current bitcoin price
+  stats      Show current channel activity stats
   huolto     Send email to the maintenance company
   help       View this message (see \`help verbose\` for more)`;
 
@@ -264,7 +284,11 @@ Cancelling a reservation:
 Send email to the maintenace company:
   huolto <message>
   This command sends email to the mainetenance company. Slack user is added as a sender and
-  copy of the email is also sent to the sender. Bot will confirm the message before sending.`;
+  copy of the email is also sent to the sender. Bot will confirm the message before sending.
+  
+Get channel activity statistic:
+  stats <days> <top>
+  Days default to the last 7 days and the top list length default is 5.`;
 
                 const output = args[1] && args[1] == 'verbose' ? help + '\n\n' + verbose : help;
                 return Promise.resolve(outputFormat(output));

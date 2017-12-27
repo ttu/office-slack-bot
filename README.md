@@ -14,7 +14,9 @@ Slack bot for office use.
  * Suggest a beer place
  * Send an email to a predefined address
  * Show current bitcoin price
- 
+ * Show current channel user activity statistics
+
+
 ## Get Started
 
 1) Create new configuration file (_src/configuration.js_)

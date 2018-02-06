@@ -128,10 +128,17 @@ class CalendarService {
         const start = new Date();
         const end = new Date(start.getTime() + durationMinutes * 60000);
 
-        if (nextReservation[0] && new Date(nextReservation[0].end) <= start)
-            return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${moment(start).format('H:mm')}. \
-The room is already reserved from ${moment(nextReservation[0].start).format('H:mm')} till ${moment(nextReservation[0].end).format('H:mm')}.`);
-
+        if (nextReservation[0]) {
+            const bookStart = moment(start);
+            const bookEnd = moment(end);
+            const resStart = moment(new Date(nextReservation[0].start));
+            const resEnd = moment(new Date(nextReservation[0].end));
+            
+            if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
+                return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. \
+            The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`);
+        }
+            
         const event = {
             'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
             'description': `A quick booking made from SlackBot for ${booker.name} - ${booker.email}`,
@@ -179,7 +186,7 @@ The room is already reserved from ${moment(nextReservation[0].start).format('H:m
             reservation.description && reservation.description.includes('A quick booking made from SlackBot for'));
 
         if (cancellerReservations.length == 0)
-            return Promise.resolve(`${canceller.email} has not made any room reservations with Slack Bot- Cannot cancel`);
+            return Promise.resolve(`${canceller.email} has not made any room reservations with SlackBot - Cannot cancel`);
 
         return new Promise((resolve, reject) => {
             google.calendar('v3').events.delete({

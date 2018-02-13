@@ -15,7 +15,7 @@ Slack bot for office use.
  * Send an email to a predefined address
  * Show current bitcoin price
  * Show current channel user activity statistics
-
+ * WebScraping
 
 ## Get Started
 
@@ -86,6 +86,18 @@ Bot's source code has an implementation to send an email to the maintenane compa
 Requirements:
 * If Google is used to send emails, enable less secure apps for the account https://myaccount.google.com/lesssecureapps
 
+#### WebScraping
+
+Uses Cheerio to scrape text from html. Selector is executed with eval it's result is shown to user. Use `helpers\cheerioTester.js` to verify selector.
+
+```js
+reddit : {
+    url: 'https://www.reddit.com/r/all',
+    description: 'Top link from Reddit all',
+    selector: `const link = $('#siteTable').find('a').first().attr('href'); link.startsWith('http') ? link : 'https://www.reddit.com' + link;`
+}
+```
+
 ## Files
 
 * src/app.js
@@ -139,6 +151,23 @@ module.exports = {
     meetingRooms: [
         { name: 'xxxx', id: 'xxxx'}
     ],
+    webScraperOptions: {
+        reddit : {
+            url: 'https://www.reddit.com/r/all',
+            description: 'Top link from Reddit all',
+            selector: `const link = $('#siteTable').find('a').first().attr('href'); link.startsWith('http') ? link : 'https://www.reddit.com' + link;`
+        },
+        vincit_kurssi: {
+            url: 'https://www.kauppalehti.fi/5/i/porssi/porssikurssit/osake/index.jsp?klid=2073',
+            description: 'Vincit stock value',            
+            selector: `$('.stock_number').text() + "€";`
+        },
+        hs_top: {
+            url: 'https://www.hs.fi/',
+            description: 'Most read link from Helsingin Sanomat',            
+            selector: `'https://www.hs.fi/' + $('.is-most-read-articles-list').find('a').first().attr('href');`
+        }
+    },
     emailConfig: {
         service: "gmail",
         host: "smtp.gmail.com",

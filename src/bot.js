@@ -10,6 +10,7 @@ const CalendarService = require('./calendarService');
 const Config = require('./configuration');
 const EmailSender = require('./emailSender');
 const SlackChannelStats = require('./slackChannelStats');
+const WebScraper = require('./webScraper');
 
 const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
@@ -27,6 +28,7 @@ const email = new EmailSender(
                         Config.emailMessage.template, 
                         Config.emailMessage.receiver);
 const slackStats = new SlackChannelStats(Config.botToken);
+const webScraper = new WebScraper(Config.webScraperOptions);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
@@ -42,6 +44,7 @@ const bot = () => {
     const maintenance = ['maintenance', 'huolto'];
     const bitcoin = ['bitcoin'];
     const stats = ['stats'];
+    const web = ['web'];
 
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -194,6 +197,8 @@ const bot = () => {
         return `Bitcoin: $${json.bpi.USD.rate}`;
     }
 
+    const getScraperText = async (params) => await webScraper.getText(params[1]);
+
     const channelStats = async (params, caller) => {
         const days = params[1] || 7;
         const top = params[2] || 5;
@@ -251,6 +256,8 @@ const bot = () => {
                 return bitcoinValue();
             } else if (stats.some(e => e === command)) {
                 return channelStats(args, caller);
+            } else if (web.some(e => e === command)) {
+                return getScraperText(args);
             } else if (command === 'help') {
 
                 const help = `
@@ -267,8 +274,9 @@ Options:
   bitcoin    Show current bitcoin price
   stats      Show current channel activity stats
   huolto     Send email to the maintenance company
+  web        Get content from preconfigured sites (\`web list\` for available sites)
   help       View this message (see \`help verbose\` for more)`;
-
+  
                 const verbose = `
 Booking a room:
   book <room> [duration (minutes)]
@@ -288,7 +296,12 @@ Send email to the maintenace company:
   
 Get channel activity statistic:
   stats <days> <top>
-  Days default to the last 7 days and the top list length default is 5.`;
+  Days default to the last 7 days and the top list length default is 5.
+
+Get content from preconfigured sites:
+  web <id>
+  Type \`web list\` for available sites.
+  Ids: ${Object.keys(Config.webScraperOptions)}`;
 
                 const output = args[1] && args[1] == 'verbose' ? help + '\n\n' + verbose : help;
                 return Promise.resolve(outputFormat(output));

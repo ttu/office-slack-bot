@@ -18,6 +18,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "botkit": "^0.4.2",
+    "cheerio": "^1.0.0-rc.2",
     "google-auth-library": "^0.10.0",
     "googleapis": "^16.1.0",
     "moment": "^2.18.1",

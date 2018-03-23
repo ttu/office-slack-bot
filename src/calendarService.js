@@ -135,8 +135,7 @@ class CalendarService {
             const resEnd = moment(new Date(nextReservation[0].end));
             
             if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
-                return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. \
-            The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`);
+                return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`);
         }
             
         const event = {

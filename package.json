@@ -11,7 +11,8 @@
     "test": "mocha -t 100000 test/*.test.js",
     "test:g": "mocha -t 100000 -g",
     "console": "node src/consoleApp.js",
-    "create_token": "node helpers/googleTokenCreator.js"
+    "create_token": "node helpers/googleTokenCreator.js",
+    "eslint": "eslint ./src ./test ./helpers"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +28,7 @@
     "superagent": "^3.1.0"
   },
   "devDependencies": {
+    "eslint": "^4.19.1",
     "mocha": "^3.2.0"
   }
 }

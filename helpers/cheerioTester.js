@@ -9,10 +9,10 @@ const options =  {
 };
 
 (async () => {
-  const opts = options['vincit_kurssi'];
+  const opts = options['reddit'];
   const result = await fetch(opts.url);
   const html = await result.text();
-  const $ = cheerio.load(html);
+  const $ = cheerio.load(html); // eslint-disable-line
   const url = eval(opts.selector);
   console.log(url);
 })();

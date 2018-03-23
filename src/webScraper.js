@@ -15,7 +15,7 @@ class WebScraper {
 
     const result = await fetch(opts.url);
     const html = await result.text();
-    const $ = cheerio.load(html);
+    const $ = cheerio.load(html); // eslint-disable-line
     return eval(opts.selector);
   }
 

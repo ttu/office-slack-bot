@@ -103,9 +103,3 @@ process.on('unhandledRejection', (reason, p) => {
         conversation.say('Unhandled Rejection at Promise ' + reason.message);
     });
 });
-
-setInterval(async () => { 
-    const btcValue = await myBot.handle('bitcoin');
-    // C3KLS2PDE, U03ADJY9U
-    botInstance.say({ channel: 'C3KLS2PDE', text: btcValue });
-}, 12 * 60 * 60 * 1000);

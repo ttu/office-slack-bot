@@ -233,7 +233,7 @@ const bot = () => {
             if (detections[0].language !== Config.translator.language) {
                 const translation = await translator.translateText(text, Config.translator.language);
                 // Fix emojis. TODO: Regex
-                const fixedText = translation[0].replace(' :', ':').replace(': ', ' :');
+                const fixedText = translation[0].replace(new RegExp(' :', 'g'), ':').replace(new RegExp(': ', 'g'), ' :');
                 return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
             }
         } catch (error) {

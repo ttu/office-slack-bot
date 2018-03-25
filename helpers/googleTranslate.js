@@ -1,11 +1,10 @@
-const TranslateService = require("../src/googleTranslateService");
+const TranslateService = require('../src/googleTranslateService');
 
 (async () => {
   try {
     const t = new TranslateService();
 
-    // const original = 'Office bot on nyt oppinut huomauttamaan kohteliaasti väärästä kielestä';
-    const original = "Book 5 null";
+    const original = 'Office bot on nyt oppinut huomauttamaan kohteliaasti väärästä kielestä';
     const detections = await t.detectLanguage(original);
 
     console.log("Detections:");
@@ -14,16 +13,11 @@ const TranslateService = require("../src/googleTranslateService");
       console.log(`${detection.input} => ${detection.language}`);
     });
 
-    if (detections[0].language !== "en") {
+    if (detections[0].language !== 'en') {
       const translation = await t.translateText(original);
       console.log(`Text: ${original}`);
       console.log(`Translation: ${translation}`);
     }
-
-    // const original = 'Office bot on nyt oppinut huomauttamaan kohteliaasti';
-    // const translation = await t.translateText(original);
-    // console.log(`Text: ${original}`);
-    // console.log(`Translation: ${translation}`);
   } catch (err) {
     console.log(`Error: ${err}`);
   }

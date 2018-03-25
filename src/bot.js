@@ -232,8 +232,8 @@ const bot = () => {
             const detections = await translator.detectLanguage(text.substring(0, 25));
             if (detections[0].language !== Config.translator.language) {
                 const translation = await translator.translateText(text, Config.translator.language);
-                // Fix emojis. TODO: Regex
-                const fixedText = translation[0].replace(new RegExp(' :', 'g'), ':').replace(new RegExp(': ', 'g'), ' :');
+                // Fix emojis
+                const fixedText = translation[0].replace(/\s(?!(?:[^:]*:[^:]*:)*[^:]*$)/mg, '');
                 return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
             }
         } catch (error) {

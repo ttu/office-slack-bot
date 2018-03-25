@@ -217,7 +217,6 @@ const bot = () => {
     }
 
     let translateEnabled = true;
-
     
     const translateText = async (channel, text) => {
         if (!translateEnabled) return;
@@ -244,7 +243,7 @@ const bot = () => {
 
     // default empty notify function
     let notifyFunc = (output) => {};
-
+    
     return {
         translate: (channel, text) => translateText(channel, text),
         setNotifyFunc(func) {
@@ -308,6 +307,7 @@ Options:
   stats      Show current channel activity stats
   huolto     Send email to the maintenance company
   web        Get content from preconfigured sites (\`web list\` for available sites)
+  translate  Toggle automatic translation on/off
   help       View this message (see \`help verbose\` for more)`;
   
                 const verbose = `
@@ -330,6 +330,10 @@ Send email to the maintenace company:
 Get channel activity statistic:
   stats <days> <top>
   Days default to the last 7 days and the top list length default is 5.
+
+Automatic translation:
+  translate
+  Toggle automatic translation on/off. Automatically tanslates all text that is not in english to english.
 
 Get content from preconfigured sites:
   web <id>

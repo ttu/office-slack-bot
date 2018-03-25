@@ -1,6 +1,7 @@
 configuration.js
 client_secret.json
 calendar-authToken.json
+translate_secret.json
 
 package-lock.json
 

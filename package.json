@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/translate": "^1.1.0",
     "bluebird": "^3.4.7",
     "botkit": "^0.4.2",
     "cheerio": "^1.0.0-rc.2",

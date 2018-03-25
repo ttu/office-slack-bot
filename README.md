@@ -77,6 +77,11 @@ Get list of restaurants/bars from [Google Places API](https://developers.google.
 Requirements:
 * [Get an API key](https://developers.google.com/places/web-service/get-api-key)
 
+#### Tranlate serivce
+
+Requirements:
+* [Get API Key file](https://cloud.google.com/translate/docs/quickstart)
+
 #### Send email
 
 [Nodemailer](https://nodemailer.com/) is used to sen email. Add `mailConfig` to the configuration file. Will send email to defined email address and cc to sender. Add information to the configuration's `emailMessage`.

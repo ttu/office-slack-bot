@@ -1,5 +1,5 @@
-const Promise = require('bluebird');
-const fs = Promise.promisifyAll(require('fs'));
+const Bluebird = require('bluebird');
+const fs = Bluebird.promisifyAll(require('fs'));
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 const moment = require('moment');
@@ -10,40 +10,19 @@ class CalendarService {
         this.calendars = calendars;
     }
 
-    getEvents(eventCount = 1) {
-        return new Promise(async(resolve, reject) => {
-            try {
-                const client = await this.getOAuthClient();
-                const events = await this.getCurrentOrNextEvents(eventCount, client);
-                resolve(events);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async getEvents(eventCount = 1) {
+        const client = await this.getOAuthClient();
+        return await this.getCurrentOrNextEvents(eventCount, client);
     }
 
-    bookEvent(booker, meetingRoom, durationMinutes = 15) {
-        return new Promise(async(resolve, reject) => {
-            try {
-                const client = await this.getOAuthClient();
-                const bookingResult = await this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
-                resolve(bookingResult);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async bookEvent(booker, meetingRoom, durationMinutes = 15) {
+        const client = await this.getOAuthClient();
+        return this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
     }
 
-    cancelEvent(canceller, meetingRoom) {
-        return new Promise(async(resolve, reject) => {
-            try {
-                const client = await this.getOAuthClient();
-                const cancelResult = await this.cancelMeeting(canceller, meetingRoom, client);
-                resolve(cancelResult);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async cancelEvent(canceller, meetingRoom) {
+        const client = await this.getOAuthClient();
+        return await this.cancelMeeting(canceller, meetingRoom, client);
     }
 
     async getOAuthClient() {
@@ -75,7 +54,7 @@ class CalendarService {
         });
     }
 
-    async getCalendarEvents(calendarName, calendarId, eventCount, auth) {
+    getCalendarEvents(calendarName, calendarId, eventCount, auth) {
         const params = {
             auth: auth,
             calendarId: calendarId,
@@ -113,17 +92,17 @@ class CalendarService {
 
     async bookMeetingRoom(booker, roomName, durationMinutes, auth) {
         if (!roomName)
-            return Promise.resolve(`Define a room name. (${this.calendars.map(c => c.name)})`)
+            return `Define a room name. (${this.calendars.map(c => c.name)})`;
 
         const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
 
         if (selected.length == 0)
-            return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`)
+            return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
 
         const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
 
         if (!success)
-            return Promise.resolve(`Failed to get the calendar events`);
+            return `Failed to get the calendar events`;
 
         const start = new Date();
         const end = new Date(start.getTime() + durationMinutes * 60000);
@@ -135,7 +114,7 @@ class CalendarService {
             const resEnd = moment(new Date(nextReservation[0].end));
             
             if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
-                return Promise.resolve(`Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`);
+                return `Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`;
         }
             
         const event = {
@@ -152,7 +131,7 @@ class CalendarService {
             }]
         };
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             google.calendar('v3').events.insert({
                 'auth': auth,
                 'calendarId': selected[0].id,
@@ -168,26 +147,26 @@ class CalendarService {
 
     async cancelMeeting(canceller, roomName, auth) {
         if (!roomName)
-            return Promise.resolve(`Define a room name. (${this.calendars.map(c => c.name)})`)
+            return `Define a room name. (${this.calendars.map(c => c.name)})`;
 
         const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
 
         if (selected.length == 0)
-            return Promise.resolve(`${roomName} not found. (${this.calendars.map(c => c.name)})`);
+            return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
 
         const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
         
         if (!success)
-            return Promise.resolve(`Failed to get the calendar events`);
+            return `Failed to get the calendar events`;
 
         const cancellerReservations = upcomingReservations.filter(reservation =>
             reservation.attendees && reservation.attendees.some(a => a.email == canceller.email) &&
             reservation.description && reservation.description.includes('A quick booking made from SlackBot for'));
 
         if (cancellerReservations.length == 0)
-            return Promise.resolve(`${canceller.email} has not made any room reservations with SlackBot - Cannot cancel`);
+            return `${canceller.email} has not made any room reservations with SlackBot - Cannot cancel`;
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             google.calendar('v3').events.delete({
                 'calendarId': selected[0].id,
                 'eventId': cancellerReservations[0].id,

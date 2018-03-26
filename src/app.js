@@ -40,6 +40,13 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
     });
 });
 
+controller.hears(['.'], ['ambient'], async (bot, msg) => {
+    var response = await myBot.translate(msg.channel, msg.text);
+    if (response) {
+        bot.reply(msg, response);
+    }
+});
+
 const handleConfirmConversation = (bot, user, confirmResponse) => {
     bot.startPrivateConversation({ user: user }, (err, convo) => {
         convo.ask(confirmResponse.text, [

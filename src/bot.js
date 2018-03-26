@@ -11,6 +11,7 @@ const Config = require('./configuration');
 const EmailSender = require('./emailSender');
 const SlackChannelStats = require('./slackChannelStats');
 const WebScraper = require('./webScraper');
+const TranslateService = require('./googleTranslateService');
 
 const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
 const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
@@ -29,6 +30,7 @@ const email = new EmailSender(
                         Config.emailMessage.receiver);
 const slackStats = new SlackChannelStats(Config.botToken);
 const webScraper = new WebScraper(Config.webScraperOptions);
+const translator = new TranslateService(Config.translator.keyPath);
 
 // Bot returns object literal instead of class, so we can have private functions
 const bot = () => {
@@ -45,6 +47,7 @@ const bot = () => {
     const bitcoin = ['bitcoin'];
     const stats = ['stats'];
     const web = ['web'];
+    const translate = ['translate', 'translating', 'translation'];
 
     // Slack format for code block ```triple backticks```
     const outputFormat = (text) => `\`\`\`${text}\`\`\``;
@@ -213,10 +216,36 @@ const bot = () => {
         return outputFormat(text);
     }
 
+    let translateEnabled = true;
+    
+    const translateText = async (channel, text) => {
+        if (!translateEnabled) return;
+        if (!Config.translator.channels.some(e => e === channel)) return;
+
+        // This is emoji. TODO: Regex
+        if (text.startsWith(':') && text.endsWith(':')) return;
+        // Message contains only a link. TODO: Regex
+        if (text.indexOf(' ') === -1 && text.indexOf('http') > -1) return;
+    
+        try {
+            // Use max 25 characters to detect language. It should be enough.
+            const detections = await translator.detectLanguage(text.substring(0, 25));
+            if (detections[0].language !== Config.translator.language) {
+                const translation = await translator.translateText(text, Config.translator.language);
+                // Fix emojis
+                const fixedText = translation[0].replace(/\s(?!(?:[^:]*:[^:]*:)*[^:]*$)/mg, '');
+                return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
+            }
+        } catch (error) {
+            notifyFunc('Translate failed '+ (error.message || error));
+        }
+    };
+
     // default empty notify function
     let notifyFunc = (output) => {};
-
+    
     return {
+        translate: (channel, text) => translateText(channel, text),
         setNotifyFunc(func) {
             notifyFunc = func;
         },
@@ -258,6 +287,9 @@ const bot = () => {
                 return channelStats(args, caller);
             } else if (web.some(e => e === command)) {
                 return getScraperText(args);
+            } else if (translate.some(e => e === command)) {
+                translateEnabled = !translateEnabled;
+                return Promise.resolve(translateEnabled ? 'translating' : 'translate off');
             } else if (command === 'help') {
 
                 const help = `
@@ -275,6 +307,7 @@ Options:
   stats      Show current channel activity stats
   huolto     Send email to the maintenance company
   web        Get content from preconfigured sites (\`web list\` for available sites)
+  translate  Toggle automatic translation on/off
   help       View this message (see \`help verbose\` for more)`;
   
                 const verbose = `
@@ -297,6 +330,10 @@ Send email to the maintenace company:
 Get channel activity statistic:
   stats <days> <top>
   Days default to the last 7 days and the top list length default is 5.
+
+Automatic translation:
+  translate
+  Toggle automatic translation on/off. Automatically tanslates all text that is not in english to english.
 
 Get content from preconfigured sites:
   web <id>

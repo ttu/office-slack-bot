@@ -15,6 +15,7 @@ Slack bot for office use.
  * Send an email to a predefined address
  * Show current bitcoin price
  * Show current channel user activity statistics
+ * Automatically translate conversation to selected language
  * WebScraping
 
 ## Get Started
@@ -77,10 +78,32 @@ Get list of restaurants/bars from [Google Places API](https://developers.google.
 Requirements:
 * [Get an API key](https://developers.google.com/places/web-service/get-api-key)
 
-#### Tranlate serivce
+#### Translate service
+
+Automatically translate the conversation to selected language.
+
+![Translate](docs/translate.jpg "Translate")
 
 Requirements:
 * [Get API Key file](https://cloud.google.com/translate/docs/quickstart)
+
+```js
+translator: {
+    keyPath: '/home/user123/office-slack-bot/translate_secret.json',
+    prefix: ':flag-england: ',
+    language: 'en',                
+    channels: {
+        aaaaa: {
+            enabled: true
+        },
+        xxxxx: {
+            enabled: true
+        }
+    }
+}
+```
+
+Bot adds a channel to the channel list when `translate` command is issued from the channel.
 
 #### Send email
 

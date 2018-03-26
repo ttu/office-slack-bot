@@ -216,11 +216,9 @@ const bot = () => {
         return outputFormat(text);
     }
 
-    let translateEnabled = true;
-    
     const translateText = async (channel, text) => {
-        if (!translateEnabled) return;
-        if (!Config.translator.channels.some(e => e === channel)) return;
+        const channelConfig = Config.translator.channels[channel];
+        if (!channelConfig || !channelConfig.enabled) return;
 
         // This is emoji. TODO: Regex
         if (text.startsWith(':') && text.endsWith(':')) return;
@@ -234,7 +232,9 @@ const bot = () => {
                 const translation = await translator.translateText(text, Config.translator.language);
                 // Fix emojis
                 const fixedText = translation[0].replace(/\s(?!(?:[^:]*:[^:]*:)*[^:]*$)/mg, '');
-                return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
+                
+                if (fixedText !== text)
+                    return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
             }
         } catch (error) {
             notifyFunc('Translate failed '+ (error.message || error));
@@ -288,8 +288,11 @@ const bot = () => {
             } else if (web.some(e => e === command)) {
                 return getScraperText(args);
             } else if (translate.some(e => e === command)) {
-                translateEnabled = !translateEnabled;
-                return Promise.resolve(translateEnabled ? 'translating' : 'translate off');
+                const channelConfigs = Config.translator.channels;
+                if (!channelConfigs[caller.channel]) channelConfigs[caller.channel] = { enabled: false };
+
+                channelConfigs[caller.channel].enabled = !channelConfigs[caller.channel].enabled;
+                return Promise.resolve(channelConfigs[caller.channel].enabled ? 'translating' : 'translate off');
             } else if (command === 'help') {
 
                 const help = `

@@ -6,178 +6,178 @@ const moment = require('moment');
 moment.locale('fi');
 
 class CalendarService {
-    constructor(calendars) {
-        this.calendars = calendars;
-    }
+  constructor(calendars) {
+    this.calendars = calendars;
+  }
 
-    async getEvents(eventCount = 1) {
-        const client = await this.getOAuthClient();
-        return await this.getCurrentOrNextEvents(eventCount, client);
-    }
+  async getEvents(eventCount = 1) {
+    const client = await this.getOAuthClient();
+    return await this.getCurrentOrNextEvents(eventCount, client);
+  }
 
-    async bookEvent(booker, meetingRoom, durationMinutes = 15) {
-        const client = await this.getOAuthClient();
-        return this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
-    }
+  async bookEvent(booker, meetingRoom, durationMinutes = 15) {
+    const client = await this.getOAuthClient();
+    return this.bookMeetingRoom(booker, meetingRoom, durationMinutes, client);
+  }
 
-    async cancelEvent(canceller, meetingRoom) {
-        const client = await this.getOAuthClient();
-        return await this.cancelMeeting(canceller, meetingRoom, client);
-    }
+  async cancelEvent(canceller, meetingRoom) {
+    const client = await this.getOAuthClient();
+    return await this.cancelMeeting(canceller, meetingRoom, client);
+  }
 
-    async getOAuthClient() {
-        const secretPromise = fs.readFileAsync('client_secret.json');
-        const tokenPromise = fs.readFileAsync('calendar-authToken.json');
-        const secret = await secretPromise;
-        const token = await tokenPromise;
+  async getOAuthClient() {
+    const secretPromise = fs.readFileAsync('client_secret.json');
+    const tokenPromise = fs.readFileAsync('calendar-authToken.json');
+    const secret = await secretPromise;
+    const token = await tokenPromise;
 
-        const credentials = JSON.parse(secret);
-        const clientSecret = credentials.installed.client_secret;
-        const clientId = credentials.installed.client_id;
-        const redirectUrl = credentials.installed.redirect_uris[0];
+    const credentials = JSON.parse(secret);
+    const clientSecret = credentials.installed.client_secret;
+    const clientId = credentials.installed.client_id;
+    const redirectUrl = credentials.installed.redirect_uris[0];
 
-        const auth = new googleAuth();
-        const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-        oauth2Client.credentials = JSON.parse(token);
-        return oauth2Client;
-    }
+    const auth = new googleAuth();
+    const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+    oauth2Client.credentials = JSON.parse(token);
+    return oauth2Client;
+  }
 
-    async getCurrentOrNextEvents(eventCount, auth) {
-        const promises = this.calendars.map(c => {
-            return this.getCalendarEvents(c.name, c.id, eventCount, auth);
-        }, this);
+  async getCurrentOrNextEvents(eventCount, auth) {
+    const promises = this.calendars.map(c => {
+      return this.getCalendarEvents(c.name, c.id, eventCount, auth);
+    }, this);
 
-        return await Promise.all(promises).then(results => {
-            return results.reduce((p, [success, result]) => {
-                return success ? p.concat(result) : p;
-            }, []);
-        });
-    }
+    return await Promise.all(promises).then(results => {
+      return results.reduce((p, [success, result]) => {
+        return success ? p.concat(result) : p;
+      }, []);
+    });
+  }
 
-    getCalendarEvents(calendarName, calendarId, eventCount, auth) {
-        const params = {
-            auth: auth,
-            calendarId: calendarId,
-            timeMin: (new Date()).toISOString(),
-            maxResults: eventCount,
-            singleEvents: true,
-            orderBy: 'startTime'
-        };
-        return new Promise((resolve, reject) => {
-            google.calendar('v3').events.list(params, (err, response) => {
-                if (err) {
-                    resolve([false, 'The API (calendar.events.list) returned an error: ' + err]);
-                    return;
-                }
-
-                const isPublic = (item) => item.visibility !== 'private';
-
-                const events = response.items.map(e => {
-                    return {
-                        id: e.id,
-                        name: calendarName,
-                        start: e.start.dateTime || e.start.date,
-                        end: e.end.dateTime || e.end.date,
-                        summary: isPublic(e) ? e.summary : 'Private',
-                        description: isPublic(e) ? e.description : 'Private',
-                        attendees: isPublic(e) ? e.attendees : 'Private',
-                        creator: e.creator
-                    }
-                });
-
-                resolve([true, events]);
-            });
-        });
-    }
-
-    async bookMeetingRoom(booker, roomName, durationMinutes, auth) {
-        if (!roomName)
-            return `Define a room name. (${this.calendars.map(c => c.name)})`;
-
-        const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
-
-        if (selected.length == 0)
-            return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
-
-        const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
-
-        if (!success)
-            return `Failed to get the calendar events`;
-
-        const start = new Date();
-        const end = new Date(start.getTime() + durationMinutes * 60000);
-
-        if (nextReservation[0]) {
-            const bookStart = moment(start);
-            const bookEnd = moment(end);
-            const resStart = moment(new Date(nextReservation[0].start));
-            const resEnd = moment(new Date(nextReservation[0].end));
-            
-            if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
-                return `Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`;
+  getCalendarEvents(calendarName, calendarId, eventCount, auth) {
+    const params = {
+      auth: auth,
+      calendarId: calendarId,
+      timeMin: (new Date()).toISOString(),
+      maxResults: eventCount,
+      singleEvents: true,
+      orderBy: 'startTime'
+    };
+    return new Promise((resolve, reject) => {
+      google.calendar('v3').events.list(params, (err, response) => {
+        if (err) {
+          resolve([false, 'The API (calendar.events.list) returned an error: ' + err]);
+          return;
         }
-            
-        const event = {
-            'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
-            'description': `A quick booking made from SlackBot for ${booker.name} - ${booker.email}`,
-            'start': {
-                'dateTime': start
-            },
-            'end': {
-                'dateTime': end
-            },
-            'attendees': [{
-                'email': booker.email
-            }]
-        };
 
-        return await new Promise((resolve, reject) => {
-            google.calendar('v3').events.insert({
-                'auth': auth,
-                'calendarId': selected[0].id,
-                'resource': event
-            }, (err, response) => {
-                if (err) {
-                    reject(`The API (calendar.events.insert) returned an error: ${err}\ncalendarId: ${selected[0].id}\nresource: ${JSON.stringify(event, null, 4)}`);
-                }
-                resolve(`${selected[0].name} booked for ${durationMinutes} minutes at ${moment(start).format('H:mm')}`);
-            });
+        const isPublic = (item) => item.visibility !== 'private';
+
+        const events = response.items.map(e => {
+          return {
+            id: e.id,
+            name: calendarName,
+            start: e.start.dateTime || e.start.date,
+            end: e.end.dateTime || e.end.date,
+            summary: isPublic(e) ? e.summary : 'Private',
+            description: isPublic(e) ? e.description : 'Private',
+            attendees: isPublic(e) ? e.attendees : 'Private',
+            creator: e.creator
+          }
         });
+
+        resolve([true, events]);
+      });
+    });
+  }
+
+  async bookMeetingRoom(booker, roomName, durationMinutes, auth) {
+    if (!roomName)
+      return `Define a room name. (${this.calendars.map(c => c.name)})`;
+
+    const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+
+    if (selected.length == 0)
+      return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
+
+    const [success, nextReservation] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
+
+    if (!success)
+      return `Failed to get the calendar events`;
+
+    const start = new Date();
+    const end = new Date(start.getTime() + durationMinutes * 60000);
+
+    if (nextReservation[0]) {
+      const bookStart = moment(start);
+      const bookEnd = moment(end);
+      const resStart = moment(new Date(nextReservation[0].start));
+      const resEnd = moment(new Date(nextReservation[0].end));
+            
+      if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
+        return `Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`;
     }
+            
+    const event = {
+      'summary': `${ booker.name || booker.email } - SlackBot quick booking`,
+      'description': `A quick booking made from SlackBot for ${booker.name} - ${booker.email}`,
+      'start': {
+        'dateTime': start
+      },
+      'end': {
+        'dateTime': end
+      },
+      'attendees': [{
+        'email': booker.email
+      }]
+    };
 
-    async cancelMeeting(canceller, roomName, auth) {
-        if (!roomName)
-            return `Define a room name. (${this.calendars.map(c => c.name)})`;
+    return await new Promise((resolve, reject) => {
+      google.calendar('v3').events.insert({
+        'auth': auth,
+        'calendarId': selected[0].id,
+        'resource': event
+      }, (err, response) => {
+        if (err) {
+          reject(`The API (calendar.events.insert) returned an error: ${err}\ncalendarId: ${selected[0].id}\nresource: ${JSON.stringify(event, null, 4)}`);
+        }
+        resolve(`${selected[0].name} booked for ${durationMinutes} minutes at ${moment(start).format('H:mm')}`);
+      });
+    });
+  }
 
-        const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
+  async cancelMeeting(canceller, roomName, auth) {
+    if (!roomName)
+      return `Define a room name. (${this.calendars.map(c => c.name)})`;
 
-        if (selected.length == 0)
-            return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
+    const selected = this.calendars.filter(c => c.name.toUpperCase() == roomName.toUpperCase());
 
-        const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
+    if (selected.length == 0)
+      return `${roomName} not found. (${this.calendars.map(c => c.name)})`;
+
+    const [success, upcomingReservations] = await this.getCalendarEvents(selected[0].name, selected[0].id, 1, auth);
         
-        if (!success)
-            return `Failed to get the calendar events`;
+    if (!success)
+      return `Failed to get the calendar events`;
 
-        const cancellerReservations = upcomingReservations.filter(reservation =>
-            reservation.attendees && reservation.attendees.some(a => a.email == canceller.email) &&
+    const cancellerReservations = upcomingReservations.filter(reservation =>
+      reservation.attendees && reservation.attendees.some(a => a.email == canceller.email) &&
             reservation.description && reservation.description.includes('A quick booking made from SlackBot for'));
 
-        if (cancellerReservations.length == 0)
-            return `${canceller.email} has not made any room reservations with SlackBot - Cannot cancel`;
+    if (cancellerReservations.length == 0)
+      return `${canceller.email} has not made any room reservations with SlackBot - Cannot cancel`;
 
-        return await new Promise((resolve, reject) => {
-            google.calendar('v3').events.delete({
-                'calendarId': selected[0].id,
-                'eventId': cancellerReservations[0].id,
-                'auth': auth
-            }, (err, response) => {
-                if (err)
-                    reject('The API (calendar.events.delete) returned an error: ' + err);
-                resolve(`The reservation of ${selected[0].name} at ${moment(cancellerReservations[0].start).format('H:mm')} by ${canceller.email} has been cancelled`);
-            });
-        });
-    }
+    return await new Promise((resolve, reject) => {
+      google.calendar('v3').events.delete({
+        'calendarId': selected[0].id,
+        'eventId': cancellerReservations[0].id,
+        'auth': auth
+      }, (err, response) => {
+        if (err)
+          reject('The API (calendar.events.delete) returned an error: ' + err);
+        resolve(`The reservation of ${selected[0].name} at ${moment(cancellerReservations[0].start).format('H:mm')} by ${canceller.email} has been cancelled`);
+      });
+    });
+  }
 }
 
 module.exports = CalendarService;

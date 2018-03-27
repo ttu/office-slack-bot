@@ -15,13 +15,13 @@ const TOKEN_PATH = TOKEN_DIR + 'calendar-authToken.json';
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
-    if (err) {
-        console.log('Error loading client secret file: ' + err);
-        return;
-    }
-    // Authorize a client with the loaded credentials, then call the
-    // Google Calendar API.
-    authorize(JSON.parse(content));
+  if (err) {
+    console.log('Error loading client secret file: ' + err);
+    return;
+  }
+  // Authorize a client with the loaded credentials, then call the
+  // Google Calendar API.
+  authorize(JSON.parse(content));
 });
 
 /**
@@ -30,19 +30,19 @@ fs.readFile('client_secret.json', (err, content) => {
  * @param {Object} credentials The authorization client credentials.
  */
 function authorize(credentials) {
-    // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, (err, token) => {
-        if (err) {
-            var clientSecret = credentials.installed.client_secret;
-            var clientId = credentials.installed.client_id;
-            var redirectUrl = credentials.installed.redirect_uris[0];
-            var auth = new googleAuth();
-            var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-            getNewToken(oauth2Client);
-        } else {
-            console.log(JSON.parse(token));
-        }
-    });
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) {
+      var clientSecret = credentials.installed.client_secret;
+      var clientId = credentials.installed.client_id;
+      var redirectUrl = credentials.installed.redirect_uris[0];
+      var auth = new googleAuth();
+      var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+      getNewToken(oauth2Client);
+    } else {
+      console.log(JSON.parse(token));
+    }
+  });
 }
 
 /**
@@ -52,27 +52,27 @@ function authorize(credentials) {
  *
  */
 function getNewToken(oauth2Client) {
-    var authUrl = oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: SCOPES
+  var authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES
+  });
+  console.log('Authorize this app by visiting this url: ', authUrl);
+  var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oauth2Client.getToken(code, (err, token) => {
+      if (err) {
+        console.log('Error while trying to retrieve access token', err);
+        return;
+      }
+      oauth2Client.credentials = token;
+      storeToken(token);
+      console.log('New token stored');
     });
-    console.log('Authorize this app by visiting this url: ', authUrl);
-    var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    rl.question('Enter the code from that page here: ', (code) => {
-        rl.close();
-        oauth2Client.getToken(code, (err, token) => {
-            if (err) {
-                console.log('Error while trying to retrieve access token', err);
-                return;
-            }
-            oauth2Client.credentials = token;
-            storeToken(token);
-            console.log('New token stored');
-        });
-    });
+  });
 }
 
 /**
@@ -81,13 +81,13 @@ function getNewToken(oauth2Client) {
  * @param {Object} token The token to store to disk.
  */
 function storeToken(token) {
-    try {
-        fs.mkdirSync(TOKEN_DIR);
-    } catch (err) {
-        if (err.code != 'EEXIST') {
-            throw err;
-        }
+  try {
+    fs.mkdirSync(TOKEN_DIR);
+  } catch (err) {
+    if (err.code != 'EEXIST') {
+      throw err;
     }
-    fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-    console.log('Token stored to ' + TOKEN_PATH);
+  }
+  fs.writeFile(TOKEN_PATH, JSON.stringify(token));
+  console.log('Token stored to ' + TOKEN_PATH);
 }

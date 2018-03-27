@@ -154,7 +154,7 @@ $ npm run console
 
 ## Configuration file
 
-configuration.js containts tokens, passwords, locations, sensors etc. Some of these can be given also as environment variables
+configuration.js containts tokens, passwords, locations, sensors etc.
 
 If `allowGuestsToUse` is set to _false_, then restricted users will get an error messages when trying to send messages to the bot. 
 
@@ -179,6 +179,18 @@ module.exports = {
     meetingRooms: [
         { name: 'xxxx', id: 'xxxx'}
     ],
+    translator: {
+    keyPath: '/home/my-user/office-slack-bot/translate_secret.json',
+    prefix: ':flag-england: ',
+    language: 'en',                
+    channels: {
+      AAAA: {
+        enabled: true
+      },
+      BBBB: {
+        enabled: true
+      }
+    },
     webScraperOptions: {
         reddit : {
             url: 'https://www.reddit.com/r/all',

@@ -2,10 +2,6 @@
 
 const Botkit = require('botkit');
 const Config = require('./configuration');
-
-// If constants not found from environment variables, try to get it from configuration.js file
-const BOT_TOKEN = process.env.BOT_TOKEN || Config.botToken;
-
 const myBot = require('./bot');
 
 const controller = Botkit.slackbot({
@@ -13,7 +9,7 @@ const controller = Botkit.slackbot({
 });
 
 const botInstance = controller.spawn({
-  token: BOT_TOKEN
+  token: Config.botToken
 }).startRTM();
 
 const userConfig = {

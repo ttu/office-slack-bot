@@ -6,22 +6,16 @@ moment.locale('fi');
 
 const SensorApi = require('./sensorApi');
 const GooglePlacesService = require('./googlePlacesService');
-const CalendarService = require('./calendarService').default;
+const CalendarService = require('./calendarService');
 const Config = require('./configuration');
 const EmailSender = require('./emailSender');
 const SlackChannelStats = require('./slackChannelStats');
 const WebScraper = require('./webScraper');
 const TranslateService = require('./googleTranslateService');
 
-const API_USERNAME = process.env.API_USERNAME || Config.apiUserName;
-const API_PASSWORD = process.env.API_PASSWORD || Config.apiPassword;
-const API_URL = process.env.API_URL || Config.apiUrl;
-const LOCATION_API_KEY = process.env.LOCATION_API_KEY || Config.locationApiKey;
-const HOME_CHANNEL = Config.homeChannelId;
-
-const api = new SensorApi(API_USERNAME, API_PASSWORD, API_URL, Config.sensors);
-const restaurants = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'restaurant');
-const bars = new GooglePlacesService(LOCATION_API_KEY, Config.office, 'bar', 800);
+const api = new SensorApi(Config.apiUserName, Config.apiPassword, Config.apiUrl, Config.sensors);
+const restaurants = new GooglePlacesService(Config.locationApiKey, Config.office, 'restaurant');
+const bars = new GooglePlacesService(Config.locationApiKey, Config.office, 'bar', 800);
 const calendar = new CalendarService(Config.meetingRooms);
 const email = new EmailSender(
   Config.emailConfig, 
@@ -179,7 +173,7 @@ const bot = () => {
 
   const postAnonymous = (message) => {
     const toSend = message.substr(message.indexOf(' ') + 1);
-    return Promise.resolve({ text: `Anonymous: ${toSend}`, channel: HOME_CHANNEL });
+    return Promise.resolve({ text: `Anonymous: ${toSend}`, channel: Config.homeChannelId });
   }
 
   const sendMaintenanceEmail = (message, caller) => {

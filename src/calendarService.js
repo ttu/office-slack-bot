@@ -10,6 +10,36 @@ class CalendarService {
     this.calendars = calendars;
   }
 
+  async getEventsText(eventCount = 1) {
+    const events = await this.getEvents(eventCount);
+    return events.reduce((acc, cur) => {
+      const start = moment(cur.start).format('DD.MM. HH:mm');
+      const end = moment(cur.end).format('HH:mm');
+      return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - ${start} to ${end} - ${cur.summary}`
+    }, 'Next 2 reservations:');
+  }
+
+  async getFreeText() {
+    const events = await this.getEvents();
+    return this.calendars.reduce((acc, cur) => {
+      const e = events.find(e => e.name == cur.name);
+  
+      if (!e) 
+        return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - indefinitely`;
+  
+      const diff = moment.duration(moment(e.start).diff(moment()));
+      const diffAsHours = diff.asHours();
+      
+      if (diffAsHours > 0 && diffAsHours < 1) {
+        return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
+      } else if (diffAsHours > 0) {
+        return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
+      } else {
+        return acc;
+      }
+    }, '');
+  }
+
   async getEvents(eventCount = 1) {
     const client = await this.getOAuthClient();
     return await this.getCurrentOrNextEvents(eventCount, client);

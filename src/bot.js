@@ -14,8 +14,8 @@ const WebScraper = require('./webScraper');
 const TranslateService = require('./googleTranslateService');
 
 const api = new SensorApi(Config.apiUserName, Config.apiPassword, Config.apiUrl, Config.sensors);
-const restaurants = new GooglePlacesService(Config.locationApiKey, Config.office, 'restaurant');
-const bars = new GooglePlacesService(Config.locationApiKey, Config.office, 'bar', 800);
+const restaurantsService = new GooglePlacesService(Config.locationApiKey, Config.office, 'restaurant');
+const barsService = new GooglePlacesService(Config.locationApiKey, Config.office, 'bar', 800);
 const calendar = new CalendarService(Config.meetingRooms);
 const email = new EmailSender(
   Config.emailConfig, 
@@ -88,51 +88,32 @@ const bot = () => {
   };
 
   const getPlaces = (service) => {
-    return service.getPlaces().then(response => {
-      return `How about ${response}?`;
-    }).catch(error => {
-      notifyFunc('getPlaces failed: ' + (error.stack || error));
-      return 'Error while fetching places';
-    });
+    return service.getPlaces()
+      .then(response => `How about ${response}?`)
+      .catch(error => {
+        notifyFunc('getPlaces failed: ' + (error.stack || error));
+        return 'Error while fetching places';
+      });
   };
 
-  const getCurrentEvents = () => {
-    return calendar.getEvents(2).then(events => {
-      const eventsText = events.reduce((acc, cur) => {
-        const start = moment(cur.start).format('DD.MM. HH:mm');
-        const end = moment(cur.end).format('HH:mm');
-        return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - ${start} to ${end} - ${cur.summary}`
-      }, 'Next 2 reservations:');
+  const getCurrentEvents = async () => {
+    try {
+      const eventsText = await calendar.getEventsText(2);
       return outputFormat(eventsText);
-    }).catch(error => {
+    } catch (error) {
       notifyFunc('getCurrentEvents failed: ' + (error.stack || error));
       return 'Error with current reservations';
-    });
+    }
   };
 
-  const getFreeSlotDuration = () => {
-    return calendar.getEvents().then(events => {
-      const eventsText = Config.meetingRooms.reduce((acc, cur) => {
-        const e = events.find(e => e.name == cur.name);
-
-        if (!e)
-          return `${acc}${acc !== '' ? '\n' : ''}${cur.name} - indefinitely`;
-
-        const diff = moment.duration(moment(e.start).diff(moment()));
-        const diffAsHours = diff.asHours();
-        if (diffAsHours > 0 && diffAsHours < 1) {
-          return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diff.asMinutes().toFixed(0)} minutes`
-        } else if (diffAsHours > 0) {
-          return `${acc}${acc !== '' ? '\n' : ''}${e.name} - ${diffAsHours.toFixed(1)} hours`
-        } else {
-          return acc;
-        }
-      }, '');
+  const getFreeSlotDuration = async () => {
+    try {
+      const eventsText = await calendar.getFreeText();
       return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for:\n' + eventsText);
-    }).catch(error => {
+    } catch(error) {
       notifyFunc('getFreeSlotDuration failed: ' + (error.stack || error));
       return 'Error with free meeting rooms';
-    });
+    }
   };
 
   const bookMeetingRoom = (params, booker) => {
@@ -152,23 +133,23 @@ const bot = () => {
       duration = d;
     }
 
-    return calendar.bookEvent(booker, room, duration).then(result => {
-      return result;
-    }).catch(error => {
-      notifyFunc(`bookMeetingRoom failed: ${params} ` + (error.message || error));
-      return 'Error with booking a meeting room - ' + (error.message || error);
-    });
+    return calendar.bookEvent(booker, room, duration)
+      .then(result => result)
+      .catch(error => {
+        notifyFunc(`bookMeetingRoom failed: ${params} ` + (error.message || error));
+        return 'Error with booking a meeting room - ' + (error.message || error);
+      });
   }
 
   const cancelMeetingRoom = (params, canceller) => {
     const room = params[1];
 
-    return calendar.cancelEvent(canceller, room).then(result => {
-      return result;
-    }).catch(error => {
-      notifyFunc(`cancelMeetingRoom: ${params}` + (error.message || error));
-      return 'Error with cancelling a meeting - ' + (error.message || error);
-    });
+    return calendar.cancelEvent(canceller, room)
+      .then(result => result)
+      .catch(error => {
+        notifyFunc(`cancelMeetingRoom: ${params}` + (error.message || error));
+        return 'Error with cancelling a meeting - ' + (error.message || error);
+      });
   }
 
   const postAnonymous = (message) => {
@@ -260,9 +241,9 @@ const bot = () => {
       } else if (temp.some(e => e === command)) {
         return temperature();
       } else if (lunch.some(e => e === command)) {
-        return getPlaces(restaurants);
+        return getPlaces(restaurantsService);
       } else if (bar.some(e => e === command)) {
-        return getPlaces(bars);
+        return getPlaces(barsService);
       } else if (free.some(e => e === command)) {
         return getFreeSlotDuration();
       } else if (reservations.some(e => e === command)) {

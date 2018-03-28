@@ -91,7 +91,8 @@ Requirements:
 translator: {
     keyPath: '/home/user123/office-slack-bot/translate_secret.json',
     prefix: ':flag-england: ',
-    language: 'en',                
+    language: 'en',            
+    maxCharacters: 1000,    
     channels: {
         aaaaa: {
             enabled: true
@@ -182,7 +183,8 @@ module.exports = {
     translator: {
     keyPath: '/home/my-user/office-slack-bot/translate_secret.json',
     prefix: ':flag-england: ',
-    language: 'en',                
+    language: 'en',
+    maxCharacters: 1000,        
     channels: {
       AAAA: {
         enabled: true

@@ -204,7 +204,9 @@ const bot = () => {
       // Use max 25 characters to detect language. It should be enough.
       const detections = await translator.detectLanguage(text.substring(0, 25));
       if (detections[0].language !== Config.translator.language) {
-        const toTranslate = Config.translator.maxCharacters ? text.substring(0, Config.translator.maxCharacters) + '...' : text;
+        const toTranslate = Config.translator.maxCharacters && text.length > Config.translator.maxCharacters 
+          ? text.substring(0, Config.translator.maxCharacters) + '...' 
+          : text;
         const translation = await translator.translateText(toTranslate, Config.translator.language);
         // Fix emojis
         const fixedText = translation[0].replace(/\s(?!(?:[^:]*:[^:]*:)*[^:]*$)/mg, '');

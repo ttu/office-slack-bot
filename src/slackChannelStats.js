@@ -8,9 +8,9 @@ class SlackChannelStatus {
     this.apiKey = apiKey;
   }
 
-  async getChannelHistoryJson(channelId, startFrom = 0) {
+  async getChannelHistoryJson(method, channelId, startFrom = 0) {
     // If oldest is used then it will return that and amount of count newer ones. Have to do decision when we have anough manually.
-    const result = await fetch(`https://slack.com/api/channels.history?token=${this.apiKey}&channel=${channelId}&latest=${startFrom}&count=1000&pretty=0`);
+    const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}&latest=${startFrom}&count=1000&pretty=0`);
     return await result.json();
   }
 
@@ -20,7 +20,16 @@ class SlackChannelStatus {
     return json.ok ? json.user : {};
   }
 
+  async isChannelPublic(channelId) {
+    const result = await fetch(`https://slack.com/api/channels.info?token=${this.apiKey}&channel=${channelId}`);
+    const json = await result.json();
+    return json.ok;
+  }
+
   async getActivity(channelId, days = 7, top = 5) {
+
+    const listMethod = await this.isChannelPublic(channelId) ? 'channels.history' : 'groups.history';
+
     const lastWeek = moment().add(-1 * days, 'days');
     const oldestTimeStamp = lastWeek.unix();
 
@@ -28,7 +37,7 @@ class SlackChannelStatus {
     let startFrom = 0;
 
     while (true) {
-      let json = await this.getChannelHistoryJson(channelId, startFrom);
+      let json = await this.getChannelHistoryJson(listMethod, channelId, startFrom);
 
       if (json.ok === false)
         return null;

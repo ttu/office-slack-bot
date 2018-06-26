@@ -180,14 +180,15 @@ const bot = () => {
   const channelStats = async (params, caller) => {
     const days = params[1] || 7;
     const top = params[2] || 5;
-        
+
     const activity = await slackStats.getActivity(caller.channel, days, top);
 
     if (!activity)
       return Promise.resolve('Could not get channel history data');
 
     const topList = activity.top.reduce((text, item) => `${text}  ${item.name} - ${item.count} (${item.percentage}%)\n`, '');
-    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\nTop Users:\n${topList}`;
+    const listText = top == 0 ? 'Inactive users:' : 'Top users:';
+    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\n${listText}\n${topList}`;
     return outputFormat(text);
   }
 
@@ -267,12 +268,14 @@ const bot = () => {
         return getScraperText(args);
       } else if (translate.some(e => e === command)) {
         const channelConfigs = Config.translator.channels;
-        if (!channelConfigs[caller.channel]) channelConfigs[caller.channel] = { enabled: false };
+        const channelConfig = channelConfigs[caller.channel];
 
-        channelConfigs[caller.channel].enabled = !channelConfigs[caller.channel].enabled;
-        return Promise.resolve(channelConfigs[caller.channel].enabled ? 'translating' : 'translate off');
+        if (!channelConfig)
+          channelConfigs[caller.channel] = { enabled: false };
+
+        channelConfig.enabled = !channelConfig.enabled;
+        return Promise.resolve(channelConfig.enabled ? 'translating' : 'translate off');
       } else if (command === 'help') {
-
         const help = `
 Options:
   say        Say something anonymously
@@ -311,6 +314,7 @@ Send email to the maintenace company:
 Get channel activity statistic:
   stats <days> <top>
   Days default to the last 7 days and the top list length default is 5.
+  If top is 0, will only return inactive users.
 
 Automatic translation:
   translate

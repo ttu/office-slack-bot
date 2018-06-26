@@ -14,6 +14,14 @@ class SlackChannelStatus {
     return await result.json();
   }
 
+  async getChannelMembers(channelId) {
+    const isPublic = await this.isChannelPublic(channelId);
+    const method =  isPublic ? 'channels.info' : 'groups.info';
+    const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}`);
+    var json = await result.json();
+    return isPublic ? json.channel.members : json.group.members;
+  }
+
   async getUser(userId) {
     const result = await fetch(`https://slack.com/api/users.info?token=${this.apiKey}&user=${userId}&pretty=0`);
     const json = await result.json();
@@ -77,13 +85,23 @@ class SlackChannelStatus {
     const sortedArray = groupedArray.sort((a, b) => a.count - b.count).reverse();
     const itemCount = messages.length;
 
-    const topList = sortedArray.slice(0, top).map(e => {
-      return {
-        id: e.id,
-        count: e.count,
-        percentage: (e.count / itemCount * 100).toFixed(1)
-      }
-    });
+    let topList;
+
+    if (top == 0) {
+      const members = await this.getChannelMembers(channelId);
+      const passiveMembers = members.filter(e => sortedArray.some(s => s.id == e) === false);
+      topList = passiveMembers.map(e => {
+        return { id: e, count: 0, percentage: 0 };
+      });
+    } else {
+      topList = sortedArray.slice(0, top).map(e => {
+        return {
+          id: e.id,
+          count: e.count,
+          percentage: (e.count / itemCount * 100).toFixed(1)
+        };
+      });
+    }
 
     const userPromises = topList.map(e => this.getUser(e.id));
 

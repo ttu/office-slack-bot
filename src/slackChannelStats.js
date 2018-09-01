@@ -67,7 +67,8 @@ class SlackChannelStatus {
     }
 
     const userGrouped = messages.reduce((grouped, item) => {
-      if (!item || item.subtype == "bot_message") return grouped;
+      if (!item || item.type !== "message" || item.subtype === "bot_message" ||
+          item.subtype === "group_join" || item.subtype === "group_leave") return grouped;
 
       const key = item.user || item.comment.user;
       grouped[key] = grouped[key] || [];

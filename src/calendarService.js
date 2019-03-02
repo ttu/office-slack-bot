@@ -140,11 +140,14 @@ class CalendarService {
     if (nextReservation[0]) {
       const bookStart = moment(start);
       const bookEnd = moment(end);
-      const resStart = moment(new Date(nextReservation[0].start));
-      const resEnd = moment(new Date(nextReservation[0].end));
+      const nextResStart = moment(new Date(nextReservation[0].start));
+      const nextResEnd = moment(new Date(nextReservation[0].end));
             
-      if (bookStart.isBetween(resStart, resEnd) || bookEnd.isBetween(resStart, resEnd))
-        return `Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${resStart.format('H:mm')} till ${resEnd.format('H:mm')}.`;
+      if (bookStart.isBetween(nextResStart, nextResEnd) 
+        || bookEnd.isBetween(nextResStart, nextResEnd)
+        || nextResStart.isBetween(bookStart, bookEnd) 
+        || nextResEnd.isBetween(bookStart, bookEnd))
+        return `Can't book ${roomName} for ${durationMinutes} minutes at ${bookStart.format('H:mm')}. The room is already reserved from ${nextResStart.format('H:mm')} till ${nextResEnd.format('H:mm')}.`;
     }
             
     const event = {

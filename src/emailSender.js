@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
 class EmailSender {
   constructor(mailConfig, subject, template, receiverEmail, senderEmail = '', senderName = '') {
@@ -21,17 +21,14 @@ class EmailSender {
     };
   }
 
-  getContent(content, senderName = ''){
-    return this.template
-      .replace('{content}', content)
-      .replace('{senderName}', senderName || this.senderName);
+  getContent(content, senderName = '') {
+    return this.template.replace('{content}', content).replace('{senderName}', senderName || this.senderName);
   }
 
   send(content, senderEmail = '', senderName = '') {
     const opts = this.getOpts(content, senderEmail, senderName);
 
-    if (!opts.from)
-      return Promise.resolve('No sender email defined');
+    if (!opts.from) return Promise.resolve('No sender email defined');
 
     const transport = nodemailer.createTransport(this.mailConfig);
 

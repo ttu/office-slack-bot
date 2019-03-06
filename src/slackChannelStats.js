@@ -4,7 +4,6 @@ const moment = require('moment');
 moment.locale('fi');
 
 class SlackChannelStatus {
-
   constructor(apiKey) {
     this.apiKey = apiKey;
   }
@@ -17,7 +16,7 @@ class SlackChannelStatus {
 
   async getChannelMembers(channelId) {
     const isPublic = await this.isChannelPublic(channelId);
-    const method =  isPublic ? 'channels.info' : 'groups.info';
+    const method = isPublic ? 'channels.info' : 'groups.info';
     const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}`);
     const json = await result.json();
     return isPublic ? json.channel.members : json.group.members;
@@ -36,8 +35,7 @@ class SlackChannelStatus {
   }
 
   async getActivity(channelId, days = 7, top = 5) {
-
-    const listMethod = await this.isChannelPublic(channelId) ? 'channels.history' : 'groups.history';
+    const listMethod = (await this.isChannelPublic(channelId)) ? 'channels.history' : 'groups.history';
 
     const startDate = moment().add(-1 * days, 'days');
     const startTimeStamp = startDate.unix();
@@ -49,8 +47,7 @@ class SlackChannelStatus {
       // eslint-disable-next-line no-await-in-loop
       const json = await this.getChannelHistoryJson(listMethod, channelId, currentFetchTimeStamp);
 
-      if (json.ok === false)
-        return null;
+      if (json.ok === false) return null;
 
       const lastInArray = json.messages[json.messages.length - 1].ts;
 
@@ -62,27 +59,32 @@ class SlackChannelStatus {
 
       messages = messages.concat(json.messages);
 
-      if (json.has_more === false)
-        break;
+      if (json.has_more === false) break;
 
       currentFetchTimeStamp = lastInArray;
     }
 
     const userGrouped = messages.reduce((grouped, item) => {
-      if (!item || item.type !== "message" || item.subtype === "bot_message" ||
-          item.subtype === "group_join" || item.subtype === "group_leave") return grouped;
+      if (
+        !item ||
+        item.type !== 'message' ||
+        item.subtype === 'bot_message' ||
+        item.subtype === 'group_join' ||
+        item.subtype === 'group_leave'
+      )
+        return grouped;
 
       const key = item.user || item.comment.user;
       grouped[key] = grouped[key] || []; // eslint-disable-line no-param-reassign
       grouped[key].push(item);
-      return grouped
+      return grouped;
     }, {});
 
     const groupedArray = Object.keys(userGrouped).map(key => {
       return {
         id: key,
         count: userGrouped[key].length
-      }
+      };
     });
 
     const sortedArray = groupedArray.sort((a, b) => a.count - b.count).reverse();
@@ -101,7 +103,7 @@ class SlackChannelStatus {
         return {
           id: e.id,
           count: e.count,
-          percentage: (e.count / itemCount * 100).toFixed(1)
+          percentage: ((e.count / itemCount) * 100).toFixed(1)
         };
       });
     }
@@ -114,7 +116,10 @@ class SlackChannelStatus {
       item.name = users[idx].real_name; // eslint-disable-line no-param-reassign
     });
 
-    const othersPercentage = ((itemCount - topList.reduce((sum, item) => sum + item.count, 0)) / itemCount * 100).toFixed(1);
+    const othersPercentage = (
+      ((itemCount - topList.reduce((sum, item) => sum + item.count, 0)) / itemCount) *
+      100
+    ).toFixed(1);
 
     const oldestMessage = moment.unix(messages[messages.length - 1].ts);
 
@@ -126,8 +131,6 @@ class SlackChannelStatus {
       active: groupedArray.length
     };
   }
-
-
 }
 
 module.exports = SlackChannelStatus;

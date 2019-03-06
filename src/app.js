@@ -6,9 +6,11 @@ const controller = Botkit.slackbot({
   debug: false
 });
 
-const botInstance = controller.spawn({
-  token: Config.botToken
-}).startRTM();
+const botInstance = controller
+  .spawn({
+    token: Config.botToken
+  })
+  .startRTM();
 
 const userConfig = {
   user: Config.slackAdminUserId
@@ -21,12 +23,9 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
       myBot.handle(message.text, caller).then(resp => {
         if (!resp) return;
 
-        if (resp.channel)
-          bot.say({ text: resp.text, channel: resp.channel });
-        else if (resp.confirm)
-          handleConfirmConversation(bot, message.user, resp);
-        else
-          bot.reply(message, resp);
+        if (resp.channel) bot.say({ text: resp.text, channel: resp.channel });
+        else if (resp.confirm) handleConfirmConversation(bot, message.user, resp);
+        else bot.reply(message, resp);
       });
     } else {
       bot.reply(message, 'No rights to chat with Bot');
@@ -76,13 +75,13 @@ controller.on('rtm_close', () => {
   process.exit();
 });
 
-myBot.setNotifyFunc((output) => {
+myBot.setNotifyFunc(output => {
   botInstance.startPrivateConversation(userConfig, (err, conversation) => {
     conversation.say(output);
   });
 });
 
-process.on('uncaughtException', (exception) => {
+process.on('uncaughtException', exception => {
   console.log(exception);
   botInstance.startPrivateConversation(userConfig, (err, conversation) => {
     conversation.say(exception.stack);

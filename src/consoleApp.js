@@ -1,7 +1,7 @@
 const readline = require('readline');
 const myBot = require('./bot');
 
-myBot.setNotifyFunc((output) => console.log(`ERROR: ${output}`));
+myBot.setNotifyFunc(output => console.log(`ERROR: ${output}`));
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,6 +9,6 @@ const rl = readline.createInterface({
   terminal: false
 });
 
-rl.on('line', (line) => {
+rl.on('line', line => {
   myBot.handle(line, { name: 'console', email: 'console@test.com' }).then(result => console.log(result));
 });

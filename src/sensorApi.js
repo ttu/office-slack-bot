@@ -1,5 +1,3 @@
-'use strict';
-
 const request = require('superagent');
 
 class SensorApi {
@@ -17,7 +15,8 @@ class SensorApi {
           .get(`${this.url}/api/haspeople/${sensor.id}`)
           .auth(this.username, this.password)
           .end((err, res) => {
-            err || !res.ok ? reject(err) : resolve(res.body > 0);
+            if (err || !res.ok) reject(err);
+            else resolve(res.body > 0);
           });
       });
     }, this);
@@ -33,7 +32,8 @@ class SensorApi {
         .get(`${this.url}/api/data/${sensor.id}`)
         .auth(this.username, this.password)
         .end((err, res) => {
-          err || !res.ok ? reject(err) : resolve([sensor, res.body[0]]);
+          if (err || !res.ok) reject(err);
+          else resolve([sensor, res.body[0]]);
         });
     });
   }

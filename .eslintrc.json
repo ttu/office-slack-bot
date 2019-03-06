@@ -1,4 +1,6 @@
 {
+  "extends": ["airbnb", "prettier"],
+  "plugins": ["prettier"],
   "env": {
     "browser": true,
     "commonjs": true,
@@ -20,6 +22,15 @@
     "no-unused-vars": [1, { "args": "none" }],
     "constructor-super": "warn",
     "valid-typeof": "warn",
-    "indent": ["error", 2]
+    "indent": ["error", 2],
+    "no-constant-condition": "off",
+    "no-restricted-syntax":"off",
+    "guard-for-in": "off",
+    "class-methods-use-this": "off",
+    "prefer-promise-reject-errors": "off",
+    "radix": "off",
+    "no-use-before-define": "off",
+    "no-console": "off",
+    "no-eval": "off"
   }
 }

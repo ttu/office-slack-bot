@@ -20,7 +20,7 @@ class TranslateService {
   }
 
   getPriceCents(text) {
-    // Cost is $20 per 1,000,000 characters      
+    // Cost is $20 per 1,000,000 characters
     return `Translation service fee: ${(text.length * 0.002).toFixed(3)}¢`;
   }
 }

@@ -7,7 +7,7 @@ class WebScraper {
   }
 
   async getText(siteId) {
-    if (siteId == 'list') return this.getList();
+    if (siteId === 'list') return this.getList();
 
     const opts = this.options[siteId];
 
@@ -16,7 +16,7 @@ class WebScraper {
     const result = await fetch(opts.url);
     const html = await result.text();
     const $ = cheerio.load(html); // eslint-disable-line
-    return eval(opts.selector);
+    return eval(opts.selector); // eslint-disable-line no-eval
   }
 
   getList() {

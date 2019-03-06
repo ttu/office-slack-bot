@@ -1,5 +1,3 @@
-'use strict';
-
 const Botkit = require('botkit');
 const Config = require('./configuration');
 const myBot = require('./bot');
@@ -20,15 +18,15 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
   bot.api.users.info({ user: message.user }, (error, response) => {
     if (Config.allowGuestsToUse || (!response.user.is_restricted && !response.user.is_ultra_restricted)) {
       const caller = { name: response.user.real_name, email: response.user.profile.email, channel: message.channel };
-      myBot.handle(message.text, caller).then(response => {
-        if (!response) return;
+      myBot.handle(message.text, caller).then(resp => {
+        if (!resp) return;
 
-        if (response.channel)
-          bot.say({ text: response.text, channel: response.channel });
-        else if (response.confirm)
-          handleConfirmConversation(bot, message.user, response);
+        if (resp.channel)
+          bot.say({ text: resp.text, channel: resp.channel });
+        else if (resp.confirm)
+          handleConfirmConversation(bot, message.user, resp);
         else
-          bot.reply(message, response);
+          bot.reply(message, resp);
       });
     } else {
       bot.reply(message, 'No rights to chat with Bot');
@@ -37,36 +35,36 @@ controller.on(['direct_message', 'direct_mention'], (bot, message) => {
 });
 
 controller.hears(['.'], ['ambient'], async (bot, msg) => {
-  var response = await myBot.translate(msg.channel, msg.text);
+  const response = await myBot.translate(msg.channel, msg.text);
   if (response) {
     bot.reply(msg, response);
   }
 });
 
 const handleConfirmConversation = (bot, user, confirmResponse) => {
-  bot.startPrivateConversation({ user: user }, (err, convo) => {
+  bot.startPrivateConversation({ user }, (err, convo) => {
     convo.ask(confirmResponse.text, [
       {
         pattern: 'yes',
-        callback: (response, convo) => {
+        callback: (response, conv) => {
           confirmResponse.action().then(result => {
-            convo.say(result);
-            convo.next();
+            conv.say(result);
+            conv.next();
           });
         }
       },
       {
         pattern: 'no',
-        callback: (response, convo) => {
-          convo.say('Ok, rejected');
-          convo.next();
+        callback: (response, conv) => {
+          conv.say('Ok, rejected');
+          conv.next();
         }
       },
       {
         default: true,
-        callback: (response, convo) => {
-          convo.repeat();
-          convo.next();
+        callback: (response, conv) => {
+          conv.repeat();
+          conv.next();
         }
       }
     ]);
@@ -96,6 +94,6 @@ process.on('uncaughtException', (exception) => {
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
   botInstance.startPrivateConversation(userConfig, (err, conversation) => {
-    conversation.say('Unhandled Rejection at Promise ' + reason.message);
+    conversation.say(`Unhandled Rejection at Promise ${reason.message}`);
   });
 });

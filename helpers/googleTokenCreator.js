@@ -6,17 +6,17 @@
 
 const fs = require('fs');
 const readline = require('readline');
-const googleAuth = require('google-auth-library');
+const GoogleAuth = require('google-auth-library');
 
 // If modifying these scopes, delete your previously saved credentials
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
-const TOKEN_DIR = __dirname + "/";
-const TOKEN_PATH = TOKEN_DIR + 'calendar-authToken.json';
+const TOKEN_DIR = `${__dirname}/`;
+const TOKEN_PATH = `${TOKEN_DIR}calendar-authToken.json`;
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
   if (err) {
-    console.log('Error loading client secret file: ' + err);
+    console.log(`Error loading client secret file: ${err}`);
     return;
   }
   // Authorize a client with the loaded credentials, then call the
@@ -33,11 +33,11 @@ function authorize(credentials) {
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) {
-      var clientSecret = credentials.installed.client_secret;
-      var clientId = credentials.installed.client_id;
-      var redirectUrl = credentials.installed.redirect_uris[0];
-      var auth = new googleAuth();
-      var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+      const clientSecret = credentials.installed.client_secret;
+      const clientId = credentials.installed.client_id;
+      const redirectUrl = credentials.installed.redirect_uris[0];
+      const auth = new GoogleAuth();
+      const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
       getNewToken(oauth2Client);
     } else {
       console.log(JSON.parse(token));
@@ -52,12 +52,12 @@ function authorize(credentials) {
  *
  */
 function getNewToken(oauth2Client) {
-  var authUrl = oauth2Client.generateAuthUrl({
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES
   });
   console.log('Authorize this app by visiting this url: ', authUrl);
-  var rl = readline.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
@@ -68,7 +68,7 @@ function getNewToken(oauth2Client) {
         console.log('Error while trying to retrieve access token', err);
         return;
       }
-      oauth2Client.credentials = token;
+      oauth2Client.credentials = token; // eslint-disable-line
       storeToken(token);
       console.log('New token stored');
     });
@@ -84,10 +84,10 @@ function storeToken(token) {
   try {
     fs.mkdirSync(TOKEN_DIR);
   } catch (err) {
-    if (err.code != 'EEXIST') {
+    if (err.code !== 'EEXIST') {
       throw err;
     }
   }
   fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-  console.log('Token stored to ' + TOKEN_PATH);
+  console.log(`Token stored to ${TOKEN_PATH}`);
 }

@@ -1,7 +1,6 @@
-'use strict';
-
 const fetch = require('node-fetch');
 const moment = require('moment');
+
 moment.locale('fi');
 
 const SensorApi = require('./sensorApi');
@@ -51,7 +50,7 @@ const bot = () => {
       const text = resonse ? 'Office has people' : 'Office is empty';
       return outputFormat(text);
     }).catch(error => {
-      notifyFunc('hasPeople failed: ' + error);
+      notifyFunc(`hasPeople failed: ${error}`);
       return 'Service is offline';
     });
   };
@@ -70,7 +69,7 @@ const bot = () => {
           };
           resolve(sensorData);
         }).catch(errorMessag => {
-          notifyFunc('temperature failed: ' + errorMessag)
+          notifyFunc(`temperature failed: ${errorMessag}`)
           // Because Promise.all will fail fast, on error resolve null instead of reject
           resolve(null);
         });
@@ -91,7 +90,7 @@ const bot = () => {
     return service.getPlaces()
       .then(response => `How about ${response}?`)
       .catch(error => {
-        notifyFunc('getPlaces failed: ' + (error.stack || error));
+        notifyFunc(`getPlaces failed: ${(error.stack || error)}`);
         return 'Error while fetching places';
       });
   };
@@ -101,7 +100,7 @@ const bot = () => {
       const eventsText = await calendar.getEventsText(2);
       return outputFormat(eventsText);
     } catch (error) {
-      notifyFunc('getCurrentEvents failed: ' + (error.stack || error));
+      notifyFunc(`getCurrentEvents failed: ${(error.stack || error)}`);
       return 'Error with current reservations';
     }
   };
@@ -109,9 +108,9 @@ const bot = () => {
   const getFreeSlotDuration = async () => {
     try {
       const eventsText = await calendar.getFreeText();
-      return outputFormat(eventsText === '' ? 'No free meeting rooms' : 'Free for:\n' + eventsText);
+      return outputFormat(eventsText === '' ? 'No free meeting rooms' : `Free for:\n${eventsText}`);
     } catch(error) {
-      notifyFunc('getFreeSlotDuration failed: ' + (error.stack || error));
+      notifyFunc(`getFreeSlotDuration failed: ${(error.stack || error)}`);
       return 'Error with free meeting rooms';
     }
   };
@@ -122,7 +121,7 @@ const bot = () => {
 
     if (params[2]) {
       const lastThree = params[2].substr(params[2].length - 3);
-      const d = lastThree == 'min' ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
+      const d = lastThree === 'min' ? parseInt(params[2].slice(0, -3)) : parseInt(params[2]);
 
       if (!Number.isInteger(d))
         return Promise.resolve(`Invalid duration`);
@@ -136,8 +135,8 @@ const bot = () => {
     return calendar.bookEvent(booker, room, duration)
       .then(result => result)
       .catch(error => {
-        notifyFunc(`bookMeetingRoom failed: ${params} ` + (error.message || error));
-        return 'Error with booking a meeting room - ' + (error.message || error);
+        notifyFunc(`bookMeetingRoom failed: ${params} ${(error.message || error)}`);
+        return `Error with booking a meeting room - ${(error.message || error)}`;
       });
   }
 
@@ -147,8 +146,8 @@ const bot = () => {
     return calendar.cancelEvent(canceller, room)
       .then(result => result)
       .catch(error => {
-        notifyFunc(`cancelMeetingRoom: ${params}` + (error.message || error));
-        return 'Error with cancelling a meeting - ' + (error.message || error);
+        notifyFunc(`cancelMeetingRoom: ${params} ${(error.message || error)}`);
+        return `Error with cancelling a meeting - ${(error.message || error)}`;
       });
   }
 
@@ -158,7 +157,7 @@ const bot = () => {
   }
 
   const sendMaintenanceEmail = (message, caller) => {
-    if (message.indexOf(' ') == -1)
+    if (message.indexOf(' ') === -1)
       return Promise.resolve(`Message is empty`);
 
     const toSend = message.substr(message.indexOf(' ') + 1);
@@ -175,7 +174,7 @@ const bot = () => {
     return `Bitcoin: $${json.bpi.USD.rate}`;
   }
 
-  const getScraperText = async (params) => await webScraper.getText(params[1]);
+  const getScraperText = async (params) => webScraper.getText(params[1]);
 
   const channelStats = async (params, caller) => {
     const days = params[1] || 7;
@@ -187,26 +186,26 @@ const bot = () => {
       return Promise.resolve('Could not get channel history data');
 
     const topList = activity.top.reduce((text, item) => `${text}  ${item.name} - ${item.count} (${item.percentage}%)\n`, '');
-    const listText = top == 0 ? 'Inactive users:' : 'Top users:';
+    const listText = top === 0 ? 'Inactive users:' : 'Top users:';
     const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\n${listText}\n${topList}`;
     return outputFormat(text);
   }
 
   const translateText = async (channel, text) => {
     const channelConfig = Config.translator.channels[channel];
-    if (!channelConfig || !channelConfig.enabled) return;
+    if (!channelConfig || !channelConfig.enabled) return '';
 
     // This is emoji. TODO: Regex
-    if (text.startsWith(':') && text.endsWith(':')) return;
+    if (text.startsWith(':') && text.endsWith(':')) return '';
     // Message contains only a link. TODO: Regex
-    if (text.indexOf(' ') === -1 && text.indexOf('http') > -1) return;
+    if (text.indexOf(' ') === -1 && text.indexOf('http') > -1) return '';
     
     try {
       // Use max 25 characters to detect language. It should be enough.
       const detections = await translator.detectLanguage(text.substring(0, 25));
       if (detections[0].language !== Config.translator.language) {
         const toTranslate = Config.translator.maxCharacters && text.length > Config.translator.maxCharacters 
-          ? text.substring(0, Config.translator.maxCharacters) + '...' 
+          ? `${text.substring(0, Config.translator.maxCharacters)}...` 
           : text;
         const translation = await translator.translateText(toTranslate, Config.translator.language);
         // Fix emojis
@@ -216,11 +215,12 @@ const bot = () => {
           return `${Config.translator.prefix}${fixedText} (${translator.getPriceCents(text)})`;
       }
     } catch (error) {
-      notifyFunc('Translate failed '+ (error.message || error));
+      notifyFunc(`Translate failed ${(error.message || error)}`);
     }
+    return '';
   };
 
-    // default empty notify function
+  // default empty notify function
   let notifyFunc = (output) => {};
     
   return {
@@ -242,31 +242,31 @@ const bot = () => {
 
       if (anyone.some(e => e === command)) {
         return hasPeople();
-      } else if (temp.some(e => e === command)) {
+      } if (temp.some(e => e === command)) {
         return temperature();
-      } else if (lunch.some(e => e === command)) {
+      } if (lunch.some(e => e === command)) {
         return getPlaces(restaurantsService);
-      } else if (bar.some(e => e === command)) {
+      } if (bar.some(e => e === command)) {
         return getPlaces(barsService);
-      } else if (free.some(e => e === command)) {
+      } if (free.some(e => e === command)) {
         return getFreeSlotDuration();
-      } else if (reservations.some(e => e === command)) {
+      } if (reservations.some(e => e === command)) {
         return getCurrentEvents();
-      } else if (book.some(e => e === command)) {
+      } if (book.some(e => e === command)) {
         return bookMeetingRoom(args, caller);
-      } else if (cancel.some(e => e === command)) {
+      } if (cancel.some(e => e === command)) {
         return cancelMeetingRoom(args, caller);
-      } else if (say.some(e => e === command)) {
+      } if (say.some(e => e === command)) {
         return postAnonymous(message);
-      } else if (maintenance.some(e => e === command)) {
+      } if (maintenance.some(e => e === command)) {
         return sendMaintenanceEmail(message, caller);
-      } else if (bitcoin.some(e => e === command)) {
+      } if (bitcoin.some(e => e === command)) {
         return bitcoinValue();
-      } else if (stats.some(e => e === command)) {
+      } if (stats.some(e => e === command)) {
         return channelStats(args, caller);
-      } else if (web.some(e => e === command)) {
+      } if (web.some(e => e === command)) {
         return getScraperText(args);
-      } else if (translate.some(e => e === command)) {
+      } if (translate.some(e => e === command)) {
         const channelConfigs = Config.translator.channels;
         const channelConfig = channelConfigs[caller.channel];
 
@@ -275,7 +275,7 @@ const bot = () => {
 
         channelConfig.enabled = !channelConfig.enabled;
         return Promise.resolve(channelConfig.enabled ? 'translating' : 'translate off');
-      } else if (command === 'help') {
+      } if (command === 'help') {
         const help = `
 Options:
   say        Say something anonymously
@@ -325,7 +325,7 @@ Get content from preconfigured sites:
   Type \`web list\` for available sites.
   Ids: ${Object.keys(Config.webScraperOptions)}`;
 
-        const output = args[1] && args[1] == 'verbose' ? help + '\n\n' + verbose : help;
+        const output = args[1] && args[1] === 'verbose' ? `${help}\n\n${verbose}` : help;
         return Promise.resolve(outputFormat(output));
       }
 

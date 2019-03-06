@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const moment = require('moment');
+
 moment.locale('fi');
 
 class SlackChannelStatus {
@@ -9,16 +10,16 @@ class SlackChannelStatus {
   }
 
   async getChannelHistoryJson(method, channelId, startFrom = 0) {
-    // If oldest is used then it will return that and amount of count newer ones. Have to do decision when we have anough manually.
+    // If oldest is used then it will return that and amount of count newer ones. Have to do decision when we have enough manually.
     const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}&latest=${startFrom}&count=1000&pretty=0`);
-    return await result.json();
+    return result.json();
   }
 
   async getChannelMembers(channelId) {
     const isPublic = await this.isChannelPublic(channelId);
     const method =  isPublic ? 'channels.info' : 'groups.info';
     const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}`);
-    var json = await result.json();
+    const json = await result.json();
     return isPublic ? json.channel.members : json.group.members;
   }
 
@@ -38,22 +39,23 @@ class SlackChannelStatus {
 
     const listMethod = await this.isChannelPublic(channelId) ? 'channels.history' : 'groups.history';
 
-    const lastWeek = moment().add(-1 * days, 'days');
-    const oldestTimeStamp = lastWeek.unix();
+    const startDate = moment().add(-1 * days, 'days');
+    const startTimeStamp = startDate.unix();
 
     let messages = [];
-    let startFrom = 0;
+    let currentFetchTimeStamp = 0;
 
     while (true) {
-      let json = await this.getChannelHistoryJson(listMethod, channelId, startFrom);
+      // eslint-disable-next-line no-await-in-loop
+      const json = await this.getChannelHistoryJson(listMethod, channelId, currentFetchTimeStamp);
 
       if (json.ok === false)
         return null;
 
-      let lastInArray = json.messages[json.messages.length - 1].ts;
+      const lastInArray = json.messages[json.messages.length - 1].ts;
 
-      if (oldestTimeStamp >= lastInArray) {
-        let toAdd = json.messages.filter(e => e.ts >= oldestTimeStamp);
+      if (startTimeStamp >= lastInArray) {
+        const toAdd = json.messages.filter(e => e.ts >= startTimeStamp);
         messages = messages.concat(toAdd);
         break;
       }
@@ -63,7 +65,7 @@ class SlackChannelStatus {
       if (json.has_more === false)
         break;
 
-      startFrom = lastInArray;
+      currentFetchTimeStamp = lastInArray;
     }
 
     const userGrouped = messages.reduce((grouped, item) => {
@@ -71,7 +73,7 @@ class SlackChannelStatus {
           item.subtype === "group_join" || item.subtype === "group_leave") return grouped;
 
       const key = item.user || item.comment.user;
-      grouped[key] = grouped[key] || [];
+      grouped[key] = grouped[key] || []; // eslint-disable-line no-param-reassign
       grouped[key].push(item);
       return grouped
     }, {});
@@ -88,9 +90,9 @@ class SlackChannelStatus {
 
     let topList;
 
-    if (top == 0) {
+    if (top === 0) {
       const members = await this.getChannelMembers(channelId);
-      const passiveMembers = members.filter(e => sortedArray.some(s => s.id == e) === false);
+      const passiveMembers = members.filter(e => sortedArray.some(s => s.id === e) === false);
       topList = passiveMembers.map(e => {
         return { id: e, count: 0, percentage: 0 };
       });
@@ -109,7 +111,7 @@ class SlackChannelStatus {
     const users = await Promise.all(userPromises);
 
     topList.forEach((item, idx) => {
-      item.name = users[idx].real_name;
+      item.name = users[idx].real_name; // eslint-disable-line no-param-reassign
     });
 
     const othersPercentage = ((itemCount - topList.reduce((sum, item) => sum + item.count, 0)) / itemCount * 100).toFixed(1);

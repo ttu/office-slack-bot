@@ -1,5 +1,3 @@
-'use strict';
-
 const request = require('superagent');
 
 class GooglePlacesService {
@@ -23,7 +21,7 @@ class GooglePlacesService {
           // Maybe too frequent requests to the API makes the request to fail?
           if (res.body.status === "INVALID_REQUEST") {
             if (tryCount > 5) cb([true, datas]); // Return what we have so far
-            setTimeout(() => getData(datas, url, cb, tryCount++), 2000);
+            setTimeout(() => getData(datas, url, cb, tryCount++), 2000); // eslint-disable-line
             return;
           }
 
@@ -37,7 +35,7 @@ class GooglePlacesService {
             const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${res.body.next_page_token}&key=${this.key}`;
             getData(newDatas, nextPageUrl, cb);
           } else {
-            console.log(`Found ${newDatas.length} items`);
+            // console.log(`Found ${newDatas.length} items`);
             cb([true, newDatas]);
           }
         });

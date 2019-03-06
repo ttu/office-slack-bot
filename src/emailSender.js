@@ -1,4 +1,4 @@
-var nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 
 class EmailSender {
   constructor(mailConfig, subject, template, receiverEmail, senderEmail = '', senderName = '') {

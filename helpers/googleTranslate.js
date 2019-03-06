@@ -7,7 +7,7 @@ const TranslateService = require('../src/googleTranslateService');
     const original = 'Office bot on nyt oppinut huomauttamaan kohteliaasti väärästä kielestä';
     const detections = await t.detectLanguage(original);
 
-    console.log("Detections:");
+    console.log('Detections:');
     detections.forEach(detection => {
       console.log(JSON.stringify(detection));
       console.log(`${detection.input} => ${detection.language}`);

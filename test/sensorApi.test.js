@@ -1,5 +1,3 @@
-'use strict';
-
 const SensorApi = require('../src/sensorApi');
 const Config = require('../src/configuration');
 

@@ -1,5 +1,3 @@
-'use strict';
-
 const GooglePlacesService = require('../src/googlePlacesService');
 const Config = require('../src/configuration');
 

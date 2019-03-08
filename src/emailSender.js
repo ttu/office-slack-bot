@@ -34,11 +34,8 @@ class EmailSender {
 
     return new Promise((resolve, reject) => {
       transport.sendMail(opts, (error, response) => {
-        if (error) {
-          resolve(error);
-        } else {
-          resolve(`Email sent`);
-        }
+        if (error) resolve(error);
+        else resolve(`Email sent`);
       });
     });
   }

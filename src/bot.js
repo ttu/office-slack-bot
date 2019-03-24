@@ -93,12 +93,12 @@ const bot = () => {
     });
   };
 
-  const getPlaces = service => {
+  const getRandomPlace = service => {
     return service
-      .getPlaces()
+      .getRandomPlace()
       .then(response => `How about ${response}?`)
       .catch(error => {
-        notifyFunc(`getPlaces failed: ${error.stack || error}`);
+        notifyFunc(`getRandomPlace failed: ${error.stack || error}`);
         return 'Error while fetching places';
       });
   };
@@ -258,10 +258,10 @@ const bot = () => {
         return temperature();
       }
       if (lunch.some(e => e === command)) {
-        return getPlaces(restaurantsService);
+        return getRandomPlace(restaurantsService);
       }
       if (bar.some(e => e === command)) {
-        return getPlaces(barsService);
+        return getRandomPlace(barsService);
       }
       if (free.some(e => e === command)) {
         return getFreeSlotDuration();

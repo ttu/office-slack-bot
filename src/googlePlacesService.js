@@ -12,36 +12,39 @@ class GooglePlacesService {
   }
 
   refreshData() {
-    const getData = (datas, url, cb, tryCount = 0) => {
+    const getData = (datas, url, readyFunc, tryCount = 0) => {
       request.get(url).end((err, res) => {
-        if (err || !res.ok) cb([false, 'Failed']);
+        if (err || !res.ok) {
+          readyFunc([false, 'Failed']);
+          return;
+        }
 
         // Maybe too frequent requests to the API makes the request to fail?
         if (res.body.status === 'INVALID_REQUEST') {
-          if (tryCount > 5) cb([true, datas]); // Return what we have so far
-          setTimeout(() => getData(datas, url, cb, tryCount++), 2000); // eslint-disable-line
+          if (tryCount > 5) readyFunc([true, datas]); // Return what we have so far
+          setTimeout(() => getData(datas, url, readyFunc, tryCount++), 2000); // eslint-disable-line
           return;
         }
 
         if (res.body.status === 'REQUEST_DENIED') {
-          cb([false, res.body.error_message]);
+          readyFunc([false, res.body.error_message]);
           return;
         }
 
         const newDatas = datas.concat(res.body.results.map(r => `${r.name} (${r.vicinity})`));
         if (res.body.next_page_token) {
           const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${res.body.next_page_token}&key=${this.key}`;
-          getData(newDatas, nextPageUrl, cb);
+          getData(newDatas, nextPageUrl, readyFunc);
         } else {
           console.log(`Found ${newDatas.length} items`);
-          cb([true, newDatas]);
+          readyFunc([true, newDatas]);
         }
       });
     };
 
+    // Set updatePromise in the beginnig of refresh, so data update is not exceuted if it is already runnign
+    // Other requester will wait for updatePromise to finish
     this.updatePromise = new Promise((resolve, reject) => {
-      // Set this in the beginnig so we won't start update again
-      // Other requester will wait for updatePromise to finish
       this.lastUpdateTimeInMs = Date.now();
 
       getData([], this.url, ([success, result]) => {
@@ -57,7 +60,7 @@ class GooglePlacesService {
     return this.updatePromise;
   }
 
-  getPlaces() {
+  getRandomPlace() {
     const isOld = Date.now() - this.lastUpdateTimeInMs > this.refreshTimeMs;
     if (isOld || this.updatePromise === null) this.refreshData();
     return this.updatePromise.then(_ => this.data[Math.floor(Math.random() * this.data.length)]);

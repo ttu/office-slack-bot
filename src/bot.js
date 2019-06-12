@@ -195,9 +195,7 @@ const bot = () => {
       ''
     );
     const listText = top === 0 ? 'Inactive users:' : 'Top users:';
-    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${
-      activity.messages
-    }\n${listText}\n${topList}`;
+    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\n${listText}\n${topList}`;
     return outputFormat(text);
   };
 
@@ -292,11 +290,13 @@ const bot = () => {
       }
       if (translate.some(e => e === command)) {
         const channelConfigs = Config.translator.channels;
-        const channelConfig = channelConfigs[caller.channel];
+        const channelId = caller.channel;
 
-        if (!channelConfig) channelConfigs[caller.channel] = { enabled: false };
+        const channelConfig = channelConfigs[channelId] || { enabled: false };
 
         channelConfig.enabled = !channelConfig.enabled;
+
+        channelConfigs[channelId] = channelConfig;
         return Promise.resolve(channelConfig.enabled ? 'translating' : 'translate off');
       }
       if (command === 'help') {

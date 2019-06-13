@@ -195,7 +195,9 @@ const bot = () => {
       ''
     );
     const listText = top === 0 ? 'Inactive users:' : 'Top users:';
-    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${activity.messages}\n${listText}\n${topList}`;
+    const text = `From: ${activity.from}\nActive users: ${activity.active}\nMessages: ${
+      activity.messages
+    }\n${listText}\n${topList}`;
     return outputFormat(text);
   };
 

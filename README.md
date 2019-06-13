@@ -164,27 +164,27 @@ configuration.js:
 'use strict';
 
 module.exports = {
-    botToken: 'xxxx',
-    homeChannelId: 'xxxx',
-    slackAdminUserId: 'xxxx',
-    allowGuestsToUse: false,
-    apiUserName: 'xxxx',
-    apiPassword: 'xxxx',
-    apiUrl: 'xxxx',
-    locationApiKey: 'xxxx',
-    office: { lat: 60.17, lon: 24.94 },
-    sensors: [ 
-        { id: 'xxx', name: 'xx'},
-        { id: 'xxx', name: 'xx'}        
-    ],
-    meetingRooms: [
-        { name: 'xxxx', id: 'xxxx'}
-    ],
-    translator: {
+  botToken: 'xxxx',
+  homeChannelId: 'xxxx',
+  slackAdminUserId: 'xxxx',
+  allowGuestsToUse: false,
+  apiUserName: 'xxxx',
+  apiPassword: 'xxxx',
+  apiUrl: 'xxxx',
+  locationApiKey: 'xxxx',
+  office: { lat: 60.17, lon: 24.94 },
+  sensors: [
+    { id: 'xxx', name: 'xx' },
+    { id: 'xxx', name: 'xx' }
+  ],
+  meetingRooms: [
+    { name: 'xxxx', id: 'xxxx' }
+  ],
+  translator: {
     keyPath: '/home/my-user/office-slack-bot/translate_secret.json',
     prefix: ':flag-england: ',
     language: 'en',
-    maxCharacters: 1000,        
+    maxCharacters: 1000,
     channels: {
       AAAA: {
         enabled: true
@@ -192,36 +192,37 @@ module.exports = {
       BBBB: {
         enabled: true
       }
+    }
+  },
+  webScraperOptions: {
+    reddit: {
+      url: 'https://www.reddit.com/r/all',
+      description: 'Top link from Reddit all',
+      selector: `const link = $('#siteTable').find('a').first().attr('href'); link.startsWith('http') ? link : 'https://www.reddit.com' + link;`
     },
-    webScraperOptions: {
-        reddit : {
-            url: 'https://www.reddit.com/r/all',
-            description: 'Top link from Reddit all',
-            selector: `const link = $('#siteTable').find('a').first().attr('href'); link.startsWith('http') ? link : 'https://www.reddit.com' + link;`
-        },
-        vincit_kurssi: {
-            url: 'https://www.kauppalehti.fi/5/i/porssi/porssikurssit/osake/index.jsp?klid=2073',
-            description: 'Vincit stock value',            
-            selector: `$('.stock_number').text() + "€";`
-        },
-        hs_top: {
-            url: 'https://www.hs.fi/',
-            description: 'Most read link from Helsingin Sanomat',            
-            selector: `'https://www.hs.fi/' + $('.is-most-read-articles-list').find('a').first().attr('href');`
-        }
+    vincit_kurssi: {
+      url: 'https://www.kauppalehti.fi/5/i/porssi/porssikurssit/osake/index.jsp?klid=2073',
+      description: 'Vincit stock value',
+      selector: `$('.stock_number').text() + "€";`
     },
-    emailConfig: {
-        service: "gmail",
-        host: "smtp.gmail.com",
-        auth: {
-            user: "xxx@gmail.com",
-            pass: "xxxxx"
-        }
-    },
-    emailMessage: {
-        receiver: 'test@test.com',
-        subject: 'Maintenance request',
-        template: `
+    hs_top: {
+      url: 'https://www.hs.fi/',
+      description: 'Most read link from Helsingin Sanomat',
+      selector: `'https://www.hs.fi/' + $('.is-most-read-articles-list').find('a').first().attr('href');`
+    }
+  },
+  emailConfig: {
+    service: "gmail",
+    host: "smtp.gmail.com",
+    auth: {
+      user: "xxx@gmail.com",
+      pass: "xxxxx"
+    }
+  },
+  emailMessage: {
+    receiver: 'test@test.com',
+    subject: 'Maintenance request',
+    template: `
 Hi,
 
 {content}
@@ -229,7 +230,7 @@ Hi,
 Br,
 {senderName}
 `
-    }
+  }
 };
 ```
 

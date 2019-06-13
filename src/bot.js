@@ -42,6 +42,7 @@ const bot = () => {
   const stats = ['stats'];
   const web = ['web'];
   const translate = ['translate', 'translating', 'translation'];
+  const openDoor = ['avaa', 'open', 'door'];
 
   // Slack format for code block ```triple backticks```
   const outputFormat = text => `\`\`\`${text}\`\`\``;
@@ -231,6 +232,16 @@ const bot = () => {
     return '';
   };
 
+  const sendOpenDoorCommand = async () => {
+    const result = await fetch(Config.doorBell.url);
+    // Doorbell service always returns Forbidden
+    if (result.ok || result.status === 403) {
+      return Config.doorBell.message;
+    }
+    notifyFunc(`Opening the door failed: ${result.statusText}`);
+    return `${Config.doorBell.message} failed`;
+  };
+
   // default empty notify function
   let notifyFunc = output => {};
 
@@ -301,6 +312,9 @@ const bot = () => {
         channelConfigs[channelId] = channelConfig;
         return Promise.resolve(channelConfig.enabled ? 'translating' : 'translate off');
       }
+      if (openDoor.some(e => e === command)) {
+        return sendOpenDoorCommand();
+      }
       if (command === 'help') {
         const help = `
 Options:
@@ -318,6 +332,7 @@ Options:
   huolto     Send email to the maintenance company
   web        Get content from preconfigured sites (\`web list\` for available sites)
   translate  Toggle automatic translation on/off
+  open door  Open the door (optional \`avaa ovi\`)
   help       View this message (see \`help verbose\` for more)`;
 
         const verbose = `

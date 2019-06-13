@@ -127,6 +127,10 @@ reddit : {
 }
 ```
 
+#### Doorbell
+
+Send GET request to the defined url. External service will send a command to IoT device.
+
 ## Files
 
 * src/app.js
@@ -230,6 +234,10 @@ Hi,
 Br,
 {senderName}
 `
+  },
+  doorBell: {
+    url: 'https://webhook.site/0e1a0101-7435-48e4-8bf7-fcea6e812a5e',
+    message: 'Opening the door'
   }
 };
 ```

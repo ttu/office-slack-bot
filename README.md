@@ -90,9 +90,9 @@ Requirements:
 ```js
 translator: {
     keyPath: '/home/user123/office-slack-bot/translate_secret.json',
-    prefix: ':flag-england: ',
-    language: 'en',            
-    maxCharacters: 1000,    
+    prefix: ':flag-england:',
+    language: 'en',
+    maxCharacters: 1000,
     channels: {
         aaaaa: {
             enabled: true
@@ -186,7 +186,7 @@ module.exports = {
   ],
   translator: {
     keyPath: '/home/my-user/office-slack-bot/translate_secret.json',
-    prefix: ':flag-england: ',
+    prefix: ':flag-england:',
     language: 'en',
     maxCharacters: 1000,
     channels: {
@@ -216,11 +216,11 @@ module.exports = {
     }
   },
   emailConfig: {
-    service: "gmail",
-    host: "smtp.gmail.com",
+    service: 'gmail',
+    host: 'smtp.gmail.com',
     auth: {
-      user: "xxx@gmail.com",
-      pass: "xxxxx"
+      user: 'xxx@gmail.com',
+      pass: 'xxxxx'
     }
   },
   emailMessage: {

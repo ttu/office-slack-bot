@@ -61,7 +61,7 @@ function getNewToken(oauth2Client) {
     input: process.stdin,
     output: process.stdout
   });
-  rl.question('Enter the code from that page here: ', (code) => {
+  rl.question('Enter the code from that page here: ', code => {
     rl.close();
     oauth2Client.getToken(code, (err, token) => {
       if (err) {

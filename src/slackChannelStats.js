@@ -10,7 +10,11 @@ class SlackChannelStatus {
 
   async getChannelHistoryJson(method, channelId, startFrom = 0) {
     // If oldest is used then it will return that and amount of count newer ones. Have to do decision when we have enough manually.
-    const result = await fetch(`https://slack.com/api/${method}?token=${this.apiKey}&channel=${channelId}&latest=${startFrom}&count=1000&pretty=0`);
+    const result = await fetch(
+      `https://slack.com/api/${method}?token=${
+        this.apiKey
+      }&channel=${channelId}&latest=${startFrom}&count=1000&pretty=0`
+    );
     return result.json();
   }
 

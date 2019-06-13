@@ -4,7 +4,9 @@ class GooglePlacesService {
   constructor(apiKey, office, type, distance = 500) {
     this.key = apiKey;
     this.onlyOpen = false;
-    this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${office.lon}&radius=${distance}&type=${type}${this.onlyOpen ? '&opennow=true' : ''}&key=${this.key}`;
+    this.url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${office.lat},${
+      office.lon
+    }&radius=${distance}&type=${type}${this.onlyOpen ? '&opennow=true' : ''}&key=${this.key}`;
     this.lastUpdateTimeInMs = 0;
     this.refreshTimeMs = 5 * 60 * 10000;
     this.updatePromise = null;
@@ -33,7 +35,9 @@ class GooglePlacesService {
 
         const newDatas = datas.concat(res.body.results.map(r => `${r.name} (${r.vicinity})`));
         if (res.body.next_page_token) {
-          const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${res.body.next_page_token}&key=${this.key}`;
+          const nextPageUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${
+            res.body.next_page_token
+          }&key=${this.key}`;
           getData(newDatas, nextPageUrl, readyFunc);
         } else {
           console.log(`Found ${newDatas.length} items`);

@@ -12,7 +12,7 @@
     "test:g": "mocha -t 100000 -g",
     "console": "node src/consoleApp.js",
     "create_token": "node helpers/googleTokenCreator.js",
-    "eslint": "eslint ./src ./test ./helpers"
+    "lint": "eslint ./src ./test ./helpers"
   },
   "author": "",
   "license": "ISC",

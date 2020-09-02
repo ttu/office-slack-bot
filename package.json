@@ -22,7 +22,7 @@
     "botkit": "^0.4.2",
     "cheerio": "^1.0.0-rc.2",
     "google-auth-library": "^0.10.0",
-    "googleapis": "^16.1.0",
+    "googleapis": "^39.1.0",
     "moment": "^2.18.1",
     "node-fetch": "^1.7.3",
     "nodemailer": "^4.1.0",
